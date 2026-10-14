@@ -1,7 +1,7 @@
 """
 Admission enquiry routes.
 
-- POST   /api/enquiries          public — submit an enquiry
+- POST   /api/enquiries          public — submit an enquiry (rate-limited per IP)
 - GET    /api/enquiries          admin  — list (optional ?status=new)
 - GET    /api/enquiries/stats    admin  — counts by status
 - PUT    /api/enquiries/{id}     admin  — update status / notes
@@ -14,8 +14,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.database import get_db
 from app.core.deps import require_role
+from app.core.ratelimit import RateLimiter
 from app.models.user import User, UserRole
 from app.models.enquiry import Enquiry, EnquiryStatus
 from app.schemas.enquiry import EnquiryCreate, EnquiryUpdate, EnquiryOut, EnquiryStats
@@ -24,11 +26,17 @@ router = APIRouter(prefix="/api/enquiries", tags=["Admission Enquiries"])
 
 admin_only = require_role([UserRole.admin])
 
+_settings = get_settings()
+enquiry_limit = RateLimiter(
+    max_requests=_settings.ENQUIRY_RATE_LIMIT,
+    window_seconds=_settings.ENQUIRY_RATE_WINDOW_SECONDS,
+)
 
-@router.post("", response_model=EnquiryOut, status_code=201)
+
+@router.post("", response_model=EnquiryOut, status_code=201, dependencies=[Depends(enquiry_limit)])
 def create_enquiry(body: EnquiryCreate, db: Session = Depends(get_db)):
     """Public endpoint for parents to submit an admission enquiry."""
-    if body.website:  # honeypot tripped — pretend success, store nothing
+    if body.website:  # honeypot tripped (hidden field filled) — reject, store nothing
         raise HTTPException(status_code=400, detail="Invalid submission")
 
     data = body.model_dump(exclude={"website"})

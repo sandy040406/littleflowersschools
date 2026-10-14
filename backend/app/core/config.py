@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
 
+    # Rate limiting
+    # Set TRUST_PROXY_HEADERS=true only when running behind a reverse proxy
+    # (e.g. Render) that appends the real client IP to X-Forwarded-For.
+    TRUST_PROXY_HEADERS: bool = False
+    ENQUIRY_RATE_LIMIT: int = 5            # submissions allowed per window, per IP
+    ENQUIRY_RATE_WINDOW_SECONDS: int = 600  # 10 minutes
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

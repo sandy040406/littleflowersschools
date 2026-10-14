@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Trash2, Edit2, XCircle, CheckCircle2, MessageSquare, Loader2 } from 'lucide-react';
+import { Mail, Phone, Trash2, Edit2, XCircle, MessageSquare, Loader2, Download } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import {
@@ -12,6 +12,43 @@ import {
   deleteEnquiry,
   statusMeta
 } from '@/lib/enquiries';
+
+/** Quote a CSV cell and neutralise spreadsheet formulas (=, +, -, @) from public input. */
+function csvCell(value: string | number | null | undefined): string {
+  let s = value == null ? '' : String(value);
+  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  return `"${s.replace(/"/g, '""')}"`;
+}
+
+function exportEnquiriesCsv(rows: Enquiry[], filterLabel: string) {
+  const headers = [
+    'ID', 'Submitted', 'Parent Name', 'Email', 'Phone', 'Preferred Contact',
+    'Student Name', 'Grade', 'Message', 'Status', 'Admin Notes',
+  ];
+  const lines = rows.map((e) => [
+    e.id,
+    new Date(e.created_at).toLocaleString(),
+    e.parent_name,
+    e.email,
+    e.phone,
+    e.preferred_contact,
+    e.student_name,
+    e.grade_interested,
+    e.message,
+    e.status,
+    e.admin_notes,
+  ].map(csvCell).join(','));
+
+  const csv = '\uFEFF' + [headers.map(csvCell).join(','), ...lines].join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `enquiries-${filterLabel}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
 
 export default function AdminEnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
@@ -89,9 +126,10 @@ export default function AdminEnquiriesPage() {
           <p className="text-text-secondary">Manage and respond to admission requests.</p>
         </div>
         
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-navy">Filter Status:</label>
+        <div className="flex flex-wrap items-center gap-3">
+          <label htmlFor="enquiry-status-filter" className="text-sm font-medium text-navy">Filter Status:</label>
           <select 
+            id="enquiry-status-filter"
             value={filter} 
             onChange={(e) => setFilter(e.target.value as EnquiryStatus | 'all')}
             className="border-border rounded-lg px-3 py-2 text-sm focus:ring-school-blue focus:border-school-blue"
@@ -101,6 +139,15 @@ export default function AdminEnquiriesPage() {
             <option value="contacted">Contacted</option>
             <option value="closed">Closed</option>
           </select>
+          <Button
+            id="export-enquiries-csv"
+            variant="outline"
+            size="sm"
+            disabled={isLoading || enquiries.length === 0}
+            onClick={() => exportEnquiriesCsv(enquiries, filter)}
+          >
+            <Download size={16} /> Export CSV
+          </Button>
         </div>
       </div>
 

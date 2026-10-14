@@ -66,5 +66,18 @@ if token:
     s, r = call("DELETE", f"/api/enquiries/{created['id']}", token=token)
     ok &= check("delete again 404", s == 404, r)
 
+# Opt-in: flood the public endpoint until it returns 429. This locks out the
+# calling IP for the whole window, so only run it against a throwaway server:
+#   python test_enquiry.py http://localhost:8001 admin123 --ratelimit
+if "--ratelimit" in sys.argv:
+    statuses = []
+    for _ in range(50):
+        # Invalid payload, so nothing is stored even if the limit is not hit.
+        s, _r = call("POST", "/api/enquiries", {"parent_name": "X", "email": "bad", "phone": "1"})
+        statuses.append(s)
+        if s == 429:
+            break
+    ok &= check("rate limit returns 429", 429 in statuses, statuses[-5:])
+
 print("\nALL PASSED" if ok else "\nSOME TESTS FAILED")
 sys.exit(0 if ok else 1)
