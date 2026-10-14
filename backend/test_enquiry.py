@@ -1,0 +1,70 @@
+"""End-to-end test for the enquiry API. Usage: python test_enquiry.py [base_url] [admin_password]"""
+import json
+import sys
+import urllib.request
+import urllib.error
+
+BASE = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8001"
+PWD = sys.argv[2] if len(sys.argv) > 2 else "admin123"
+
+
+def call(method, path, body=None, token=None):
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(BASE + path, data=data, method=method)
+    req.add_header("Content-Type", "application/json")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.status, json.loads(r.read() or b"null")
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read() or b"null")
+
+
+def check(name, cond, extra=""):
+    print(("PASS " if cond else "FAIL ") + name + (f"  -> {extra}" if not cond else ""))
+    return cond
+
+
+ok = True
+s, created = call("POST", "/api/enquiries", {
+    "parent_name": "Test Parent", "email": "Test@Example.com", "phone": "+91 98765 43210",
+    "student_name": "Kid", "grade_interested": "Class I", "preferred_contact": "whatsapp", "message": "hi",
+})
+ok &= check("public create 201", s == 201, created)
+ok &= check("email lowercased", created and created.get("email") == "test@example.com", created)
+
+s, r = call("POST", "/api/enquiries", {"parent_name": "AB", "email": "bad", "phone": "1"})
+ok &= check("invalid email rejected 422", s == 422, r)
+
+s, r = call("POST", "/api/enquiries", {"parent_name": "Bot", "email": "a@b.co", "phone": "9876543210", "website": "spam"})
+ok &= check("honeypot rejected 400", s == 400, r)
+
+s, r = call("GET", "/api/enquiries")
+ok &= check("list requires auth", s in (401, 403), r)
+
+s, tok = call("POST", "/api/auth/login/admin", {"email": "admin@littleflowersschools.com", "password": PWD})
+ok &= check("admin login", s == 200, tok)
+token = tok.get("access_token") if s == 200 else None
+
+if token:
+    s, lst = call("GET", "/api/enquiries", token=token)
+    ok &= check("admin list", s == 200 and any(e["id"] == created["id"] for e in lst), s)
+
+    s, lst = call("GET", "/api/enquiries?status=new", token=token)
+    ok &= check("filter status=new", s == 200 and all(e["status"] == "new" for e in lst), s)
+
+    s, st = call("GET", "/api/enquiries/stats", token=token)
+    ok &= check("stats", s == 200 and st["total"] >= 1, st)
+
+    s, upd = call("PUT", f"/api/enquiries/{created['id']}", {"status": "contacted", "admin_notes": "Called"}, token=token)
+    ok &= check("update status+notes", s == 200 and upd["status"] == "contacted" and upd["admin_notes"] == "Called", upd)
+
+    s, r = call("DELETE", f"/api/enquiries/{created['id']}", token=token)
+    ok &= check("delete", s == 200, r)
+
+    s, r = call("DELETE", f"/api/enquiries/{created['id']}", token=token)
+    ok &= check("delete again 404", s == 404, r)
+
+print("\nALL PASSED" if ok else "\nSOME TESTS FAILED")
+sys.exit(0 if ok else 1)

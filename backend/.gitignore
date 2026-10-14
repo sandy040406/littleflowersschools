@@ -1,0 +1,12 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Local data (never commit)
+app.db
+uploads/
+
+# Secrets
+.env
+!.env.example
