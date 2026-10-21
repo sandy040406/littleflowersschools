@@ -1,18 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { SCHOOL_INFO } from '@/lib/mock-data';
 import { submitContactForm } from '@/lib/enquiries';
+import { getSiteSettings, SiteSettings } from '@/lib/content';
 import { useToast } from '@/components/ui/Toast';
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [settings, setSettings] = useState<Partial<SiteSettings>>({
+    phone: '+91 11 2345 6789',
+    email: 'info@littleflowersschools.com',
+    address: '123 Education Lane, New Delhi, India 110001',
+    office_hours: 'Mon – Sat: 9:00 AM – 4:00 PM',
+  });
   const { showToast } = useToast();
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const data = await getSiteSettings();
+        setSettings(data);
+      } catch (err) {
+        console.error('Failed to load contact info', err);
+      }
+    }
+    loadSettings();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -75,7 +93,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy mb-1">Visit Us</h3>
-                    <p className="text-text-secondary">{SCHOOL_INFO.address}</p>
+                    <p className="text-text-secondary">{settings.address}</p>
                   </div>
                 </div>
 
@@ -85,8 +103,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy mb-1">Call Us</h3>
-                    <a href={`tel:${SCHOOL_INFO.phone}`} className="text-text-secondary hover:text-school-blue transition-colors">
-                      {SCHOOL_INFO.phone}
+                    <a href={`tel:${settings.phone}`} className="text-text-secondary hover:text-school-blue transition-colors">
+                      {settings.phone}
                     </a>
                   </div>
                 </div>
@@ -97,8 +115,8 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy mb-1">Email Us</h3>
-                    <a href={`mailto:${SCHOOL_INFO.email}`} className="text-text-secondary hover:text-school-blue transition-colors">
-                      {SCHOOL_INFO.email}
+                    <a href={`mailto:${settings.email}`} className="text-text-secondary hover:text-school-blue transition-colors">
+                      {settings.email}
                     </a>
                   </div>
                 </div>
@@ -109,7 +127,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-navy mb-1">Office Hours</h3>
-                    <p className="text-text-secondary">{SCHOOL_INFO.officeHours}</p>
+                    <p className="text-text-secondary">{settings.office_hours}</p>
                   </div>
                 </div>
               </div>
@@ -239,13 +257,24 @@ export default function ContactPage() {
           
           {/* Map Placeholder */}
           <div className="mt-16 rounded-2xl overflow-hidden border border-border bg-soft-blue h-96 relative flex items-center justify-center">
-            <div className="text-center bg-white/90 backdrop-blur p-6 rounded-xl shadow-sm border border-white max-w-sm mx-auto">
+            <div className="text-center bg-white/90 backdrop-blur p-6 rounded-xl shadow-sm border border-white max-w-sm mx-auto z-10">
               <MapPin size={40} className="mx-auto mb-3 text-school-blue" />
               <h3 className="font-bold text-navy mb-1">Our Location</h3>
-              <p className="text-sm text-text-secondary mb-4">{SCHOOL_INFO.address}</p>
-              <Button variant="outline" size="sm" className="w-full">
-                Get Directions
-              </Button>
+              <p className="text-sm text-text-secondary mb-4">{settings.address || 'Little Flowers Schools Campus'}</p>
+              {settings.map_url ? (
+                <a
+                  href={settings.map_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block w-full text-center px-4 py-2 text-sm font-medium border border-border rounded-lg bg-white text-navy hover:bg-neutral-light transition-colors"
+                >
+                  Get Directions
+                </a>
+              ) : (
+                <Button variant="outline" size="sm" className="w-full">
+                  Get Directions
+                </Button>
+              )}
             </div>
             {/* Grid pattern to look like a map placeholder */}
             <div className="absolute inset-0 border-t border-l border-white/40" style={{ backgroundSize: '40px 40px', backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.4) 1px, transparent 1px)', zIndex: 0 }} />

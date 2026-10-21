@@ -48,3 +48,34 @@ class HeroSlide(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+
+
+class SiteSetting(Base):
+    """
+    Key-value or unified record storing school-wide editable settings.
+    Allows non-technical admins to update contact details, address, hours,
+    and about text from the portal.
+    """
+    __tablename__ = "site_settings"
+
+    id = Column(Integer, primary_key=True)
+    school_name = Column(String(200), default="Little Flowers Schools", nullable=False)
+    tagline = Column(String(300), default="Growing Curious Minds. Building Confident Futures.", nullable=True)
+    phone = Column(String(50), default="+91 11 2345 6789", nullable=True)
+    email = Column(String(100), default="info@littleflowersschools.com", nullable=True)
+    address = Column(Text, default="123 Education Lane, New Delhi, India 110001", nullable=True)
+    office_hours = Column(String(150), default="Mon – Sat: 9:00 AM – 4:00 PM", nullable=True)
+    school_timings = Column(String(150), default="Mon – Fri: 8:00 AM – 2:30 PM", nullable=True)
+    map_url = Column(Text, nullable=True)
+    facebook_url = Column(String(300), nullable=True)
+    instagram_url = Column(String(300), nullable=True)
+    youtube_url = Column(String(300), nullable=True)
+    twitter_url = Column(String(300), nullable=True)
+    about_text = Column(Text, nullable=True)
+    vision_text = Column(Text, nullable=True)
+    mission_text = Column(Text, nullable=True)
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )

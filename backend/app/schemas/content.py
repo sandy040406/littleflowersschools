@@ -84,3 +84,46 @@ class HeroSlideOut(BaseModel):
 
 class ReorderRequest(BaseModel):
     ids: list[int]   # slide IDs in the desired display order
+
+
+# ── Site Settings ───────────────────────────────────────────
+
+class SiteSettingsOut(BaseModel):
+    id: int
+    school_name: str
+    tagline: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    office_hours: Optional[str] = None
+    school_timings: Optional[str] = None
+    map_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    about_text: Optional[str] = None
+    vision_text: Optional[str] = None
+    mission_text: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class SiteSettingsUpdate(BaseModel):
+    school_name: Optional[str] = None
+    tagline: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    address: Optional[str] = None
+    office_hours: Optional[str] = None
+    school_timings: Optional[str] = None
+    map_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    about_text: Optional[str] = None
+    vision_text: Optional[str] = None
+    mission_text: Optional[str] = None
+

@@ -37,22 +37,25 @@ import { mediaUrl } from '@/lib/api';
 async function getHomeData() {
   const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
   try {
-    const [eventsRes, facultyRes] = await Promise.all([
+    const [eventsRes, facultyRes, settingsRes] = await Promise.all([
       fetch(`${base}/api/gallery/events`, { next: { revalidate: 60 } }),
       fetch(`${base}/api/content/faculty`, { next: { revalidate: 60 } }),
+      fetch(`${base}/api/content/settings`, { next: { revalidate: 60 } }),
     ]);
     const events = eventsRes.ok ? await eventsRes.json() : [];
     const faculty = facultyRes.ok ? await facultyRes.json() : [];
-    return { events, faculty };
+    const settings = settingsRes.ok ? await settingsRes.json() : null;
+    return { events, faculty, settings };
   } catch {
-    return { events: [], faculty: [] };
+    return { events: [], faculty: [], settings: null };
   }
 }
 
 export default async function HomePage() {
-  const { events, faculty } = await getHomeData();
+  const { events, faculty, settings } = await getHomeData();
   const latestEvents = events.slice(0, 3);
   const featuredFaculty = faculty.slice(0, 4);
+  const schoolName = settings?.school_name || 'Little Flowers Schools';
   return (
     <>
       <AlertBanner />
@@ -106,10 +109,11 @@ export default async function HomePage() {
             <div>
               <Badge variant="gold" size="md">About Us</Badge>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy mt-3 mb-4">
-                Welcome to Little Flowers Schools
+                Welcome to {schoolName}
               </h2>
               <p className="text-text-secondary leading-relaxed mb-4">
-                At Little Flowers Schools, we believe every child has unique potential waiting to be discovered. Our school provides a warm, supportive environment where academic excellence meets holistic development.
+                {settings?.about_text ||
+                  `At ${schoolName}, we believe every child has unique potential waiting to be discovered. Our school provides a warm, supportive environment where academic excellence meets holistic development.`}
               </p>
               <p className="text-text-secondary leading-relaxed mb-6">
                 Our experienced faculty, thoughtful curriculum, and caring community work together to nurture curious minds and build confident, well-rounded individuals ready for tomorrow&apos;s world.

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Phone, Mail, MapPin, Globe, Camera, Video, MessageCircle } from 'lucide-react';
-import { SCHOOL_INFO, NAV_ITEMS } from '@/lib/mock-data';
+import { NAV_ITEMS } from '@/lib/mock-data';
 
 const quickLinks = [
   { label: 'Activities', href: '/activities' },
@@ -12,7 +12,28 @@ const quickLinks = [
   { label: 'Teacher Login', href: '/teacher/login' },
 ];
 
-export default function Footer() {
+async function getFooterSettings() {
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${base}/api/content/settings`, { next: { revalidate: 60 } });
+    if (res.ok) return await res.json();
+  } catch {}
+  return {
+    school_name: 'Little Flowers Schools',
+    tagline: 'Growing Curious Minds. Building Confident Futures.',
+    phone: '+91 11 2345 6789',
+    email: 'info@littleflowersschools.com',
+    address: '123 Education Lane, New Delhi, India 110001',
+    facebook_url: '#',
+    instagram_url: '#',
+    youtube_url: '#',
+    twitter_url: '#',
+  };
+}
+
+export default async function Footer() {
+  const settings = await getFooterSettings();
+
   return (
     <footer className="bg-navy text-white/85">
       {/* Main Footer */}
@@ -26,19 +47,21 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-5 max-w-xs">
-              Growing Curious Minds. Building Confident Futures. Providing quality education in a warm, nurturing environment.
+              {settings.tagline || 'Growing Curious Minds. Building Confident Futures. Providing quality education in a warm, nurturing environment.'}
             </p>
             <div className="flex items-center gap-3">
               {[
-                { icon: Globe, href: SCHOOL_INFO.social.facebook, label: 'Facebook' },
-                { icon: Camera, href: SCHOOL_INFO.social.instagram, label: 'Instagram' },
-                { icon: Video, href: SCHOOL_INFO.social.youtube, label: 'YouTube' },
-                { icon: MessageCircle, href: SCHOOL_INFO.social.twitter, label: 'Twitter' },
+                { icon: Globe, href: settings.facebook_url || '#', label: 'Facebook' },
+                { icon: Camera, href: settings.instagram_url || '#', label: 'Instagram' },
+                { icon: Video, href: settings.youtube_url || '#', label: 'YouTube' },
+                { icon: MessageCircle, href: settings.twitter_url || '#', label: 'Twitter' },
               ].map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
                   aria-label={social.label}
+                  target="_blank"
+                  rel="noreferrer"
                   className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-gold/20 hover:text-gold transition-colors"
                 >
                   <social.icon size={16} />
@@ -79,22 +102,28 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Contact</h3>
             <ul className="space-y-3">
-              <li>
-                <a href={`tel:${SCHOOL_INFO.phone}`} className="flex items-start gap-2.5 text-white/60 hover:text-gold text-sm transition-colors">
-                  <Phone size={15} className="mt-0.5 flex-shrink-0" />
-                  <span>{SCHOOL_INFO.phone}</span>
-                </a>
-              </li>
-              <li>
-                <a href={`mailto:${SCHOOL_INFO.email}`} className="flex items-start gap-2.5 text-white/60 hover:text-gold text-sm transition-colors">
-                  <Mail size={15} className="mt-0.5 flex-shrink-0" />
-                  <span>{SCHOOL_INFO.email}</span>
-                </a>
-              </li>
-              <li className="flex items-start gap-2.5 text-white/60 text-sm">
-                <MapPin size={15} className="mt-0.5 flex-shrink-0" />
-                <span>{SCHOOL_INFO.address}</span>
-              </li>
+              {settings.phone && (
+                <li>
+                  <a href={`tel:${settings.phone}`} className="flex items-start gap-2.5 text-white/60 hover:text-gold text-sm transition-colors">
+                    <Phone size={15} className="mt-0.5 flex-shrink-0" />
+                    <span>{settings.phone}</span>
+                  </a>
+                </li>
+              )}
+              {settings.email && (
+                <li>
+                  <a href={`mailto:${settings.email}`} className="flex items-start gap-2.5 text-white/60 hover:text-gold text-sm transition-colors">
+                    <Mail size={15} className="mt-0.5 flex-shrink-0" />
+                    <span>{settings.email}</span>
+                  </a>
+                </li>
+              )}
+              {settings.address && (
+                <li className="flex items-start gap-2.5 text-white/60 text-sm">
+                  <MapPin size={15} className="mt-0.5 flex-shrink-0" />
+                  <span>{settings.address}</span>
+                </li>
+              )}
             </ul>
           </div>
         </div>
@@ -103,7 +132,7 @@ export default function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-white/10">
         <div className="section-container py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/40">
-          <p>© {new Date().getFullYear()} Little Flowers Schools. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} {settings.school_name || 'Little Flowers Schools'}. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link href="#" className="hover:text-white/70 transition-colors">Privacy Policy</Link>
             <Link href="#" className="hover:text-white/70 transition-colors">Terms</Link>

@@ -10,11 +10,30 @@ export const metadata = {
   title: 'About',
 };
 
-export default function AboutPage() {
+async function getAboutSettings() {
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${base}/api/content/settings`, { next: { revalidate: 60 } });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
+export default async function AboutPage() {
+  const settings = await getAboutSettings();
+  const schoolName = settings?.school_name || 'Little Flowers Schools';
+  const aboutText = settings?.about_text;
+  const missionText =
+    settings?.mission_text ||
+    'To provide a stimulating learning environment that encourages curiosity, critical thinking, and a lifelong love for learning, empowering students to become responsible and contributing members of society.';
+  const visionText =
+    settings?.vision_text ||
+    'To be a center of educational excellence that nurtures the holistic development of every child, fostering a community of confident, compassionate, and capable individuals ready to embrace the future.';
+
   return (
     <>
       <PageHero
-        title="About Little Flowers Schools"
+        title={`About ${schoolName}`}
         subtitle="Discover our history, our philosophy, and our commitment to nurturing the next generation of confident learners."
         breadcrumb="About"
       />
@@ -28,22 +47,30 @@ export default function AboutPage() {
                 A Legacy of Learning and Excellence
               </h2>
               <div className="space-y-4 text-text-secondary leading-relaxed">
-                <p>
-                  Founded with a vision to provide quality education in a nurturing environment, Little Flowers Schools has grown into a respected institution dedicated to holistic child development.
-                </p>
-                <p>
-                  We believe that education is not just about academic achievement, but about building character, fostering creativity, and preparing students to navigate a complex and changing world with confidence and compassion.
-                </p>
-                <p>
-                  Our dedicated faculty, modern facilities, and student-centered approach ensure that every child receives the attention and opportunities they need to discover their unique potential.
-                </p>
+                {aboutText ? (
+                  aboutText.split('\n\n').map((para: string, idx: number) => (
+                    <p key={idx}>{para}</p>
+                  ))
+                ) : (
+                  <>
+                    <p>
+                      Founded with a vision to provide quality education in a nurturing environment, {schoolName} has grown into a respected institution dedicated to holistic child development.
+                    </p>
+                    <p>
+                      We believe that education is not just about academic achievement, but about building character, fostering creativity, and preparing students to navigate a complex and changing world with confidence and compassion.
+                    </p>
+                    <p>
+                      Our dedicated faculty, modern facilities, and student-centered approach ensure that every child receives the attention and opportunities they need to discover their unique potential.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
             <div className="relative">
               <div className="rounded-2xl overflow-hidden shadow-xl aspect-4/3 relative z-10">
                 <Image
                   src={PLACEHOLDER_IMAGES.school}
-                  alt="Little Flowers Schools Campus"
+                  alt={`${schoolName} Campus`}
                   fill
                   className="object-cover"
                 />
@@ -64,7 +91,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
               <p className="text-white/80 leading-relaxed text-lg">
-                To provide a stimulating learning environment that encourages curiosity, critical thinking, and a lifelong love for learning, empowering students to become responsible and contributing members of society.
+                {missionText}
               </p>
             </Card>
             <Card className="bg-white/5 border-white/10 text-white" padding="lg">
@@ -73,7 +100,7 @@ export default function AboutPage() {
               </div>
               <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
               <p className="text-white/80 leading-relaxed text-lg">
-                To be a center of educational excellence that nurtures the holistic development of every child, fostering a community of confident, compassionate, and capable individuals ready to embrace the future.
+                {visionText}
               </p>
             </Card>
           </div>

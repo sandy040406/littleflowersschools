@@ -27,11 +27,12 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.deps import require_role
 from app.models.user import User, UserRole
-from app.models.content import Announcement, HeroSlide
+from app.models.content import Announcement, HeroSlide, SiteSetting
 from app.schemas.auth import PublicFacultyOut
 from app.schemas.content import (
     AnnouncementCreate, AnnouncementUpdate, AnnouncementOut,
     HeroSlideCreate, HeroSlideUpdate, HeroSlideOut, ReorderRequest,
+    SiteSettingsOut, SiteSettingsUpdate,
 )
 
 router = APIRouter(prefix="/api/content", tags=["Content Management"])
@@ -232,3 +233,49 @@ def get_public_faculty(db: Session = Depends(get_db)):
         User.is_active == True,
     ).order_by(User.id.asc()).all()
     return teachers
+
+
+# ── Site Settings ───────────────────────────────────────────
+
+def get_or_create_settings(db: Session) -> SiteSetting:
+    setting = db.query(SiteSetting).first()
+    if not setting:
+        setting = SiteSetting(
+            school_name="Little Flowers Schools",
+            tagline="Growing Curious Minds. Building Confident Futures.",
+            phone="+91 11 2345 6789",
+            email="info@littleflowersschools.com",
+            address="123 Education Lane, New Delhi, India 110001",
+            office_hours="Mon – Sat: 9:00 AM – 4:00 PM",
+            school_timings="Mon – Fri: 8:00 AM – 2:30 PM",
+            about_text="At Little Flowers Schools, we believe that education is about nurturing the whole child — mind, body, and spirit. For over two decades, we have been providing high-quality education in a safe, caring, and stimulating environment.",
+            vision_text="To be a center of educational excellence that empowers students to reach their full potential and become thoughtful, productive global citizens.",
+            mission_text="To provide an inclusive, inspiring learning environment that fosters academic excellence, character development, and lifelong curiosity.",
+        )
+        db.add(setting)
+        db.commit()
+        db.refresh(setting)
+    return setting
+
+
+@router.get("/settings", response_model=SiteSettingsOut)
+def get_site_settings(db: Session = Depends(get_db)):
+    """Public endpoint to fetch current school info and editable site copy."""
+    return get_or_create_settings(db)
+
+
+@router.put("/settings", response_model=SiteSettingsOut)
+def update_site_settings(
+    body: SiteSettingsUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_only),
+):
+    """Admin endpoint to update school settings and site copy."""
+    setting = get_or_create_settings(db)
+    for field, val in body.model_dump(exclude_unset=True).items():
+        if val is not None:
+            setattr(setting, field, val.strip() if isinstance(val, str) else val)
+    db.commit()
+    db.refresh(setting)
+    return setting
+

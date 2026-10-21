@@ -50,3 +50,30 @@ export interface FacultyMember {
 
 export const getPublicFaculty = (signal?: AbortSignal) =>
   api<FacultyMember[]>('/api/content/faculty', { auth: false, signal });
+
+export interface SiteSettings {
+  id: number;
+  school_name: string;
+  tagline: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  office_hours: string | null;
+  school_timings: string | null;
+  map_url: string | null;
+  facebook_url: string | null;
+  instagram_url: string | null;
+  youtube_url: string | null;
+  twitter_url: string | null;
+  about_text: string | null;
+  vision_text: string | null;
+  mission_text: string | null;
+  updated_at: string | null;
+}
+
+export const getSiteSettings = (signal?: AbortSignal) =>
+  api<SiteSettings>('/api/content/settings', { auth: false, signal });
+
+export const updateSiteSettings = (body: Partial<SiteSettings>) =>
+  api<SiteSettings>('/api/content/settings', { method: 'PUT', body });
+

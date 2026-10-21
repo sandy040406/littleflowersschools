@@ -8,7 +8,7 @@ const sidebarItems = [
   { label: 'Announcements', href: '/admin/content/announcements', icon: <Megaphone size={20} /> },
   { label: 'Hero Slider', href: '/admin/content/slider', icon: <MonitorPlay size={20} /> },
   { label: 'Gallery & Events', href: '/admin/gallery', icon: <ImageIcon size={20} /> },
-  { label: 'Settings', href: '#', icon: <Settings size={20} /> },
+  { label: 'Settings', href: '/admin/settings', icon: <Settings size={20} /> },
 ];
 
 export default function AdminPortalLayout({ children }: { children: React.ReactNode }) {
