@@ -66,6 +66,32 @@ if token:
     s, r = call("DELETE", f"/api/enquiries/{created['id']}", token=token)
     ok &= check("delete again 404", s == 404, r)
 
+    # Test Contact Message API
+    s, contact_created = call("POST", "/api/contact", {
+        "name": "Jane Visitor",
+        "email": "jane@example.com",
+        "phone": "+91 91234 56789",
+        "subject": "General Inquiry",
+        "message": "Hello, I would like to know more about the school campus.",
+    })
+    ok &= check("contact create 201", s == 201, contact_created)
+    ok &= check("contact enquiry_type", contact_created and contact_created.get("enquiry_type") == "contact", contact_created)
+
+    s, bot_res = call("POST", "/api/contact", {
+        "name": "Spam Bot",
+        "email": "bot@spam.com",
+        "phone": "9999999999",
+        "message": "Buy crypto now!",
+        "website": "http://spamsite.com",
+    })
+    ok &= check("contact honeypot rejected 400", s == 400, bot_res)
+
+    s, contact_list = call("GET", "/api/enquiries?enquiry_type=contact", token=token)
+    ok &= check("filter enquiry_type=contact", s == 200 and any(e["id"] == contact_created["id"] for e in contact_list), contact_list)
+
+    if contact_created:
+        call("DELETE", f"/api/enquiries/{contact_created['id']}", token=token)
+
 # Opt-in: flood the public endpoint until it returns 429. This locks out the
 # calling IP for the whole window, so only run it against a throwaway server:
 #   python test_enquiry.py http://localhost:8001 admin123 --ratelimit

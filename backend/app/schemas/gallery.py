@@ -64,3 +64,18 @@ class MediaOut(BaseModel):
 
 class EventDetailOut(EventOut):
     media: list[MediaOut] = []
+
+
+class ClassSummary(BaseModel):
+    name: str
+    section: str
+    student_count: int
+
+
+class TeacherDashboardSummary(BaseModel):
+    my_events_count: int
+    total_events_count: int
+    my_uploads_count: int
+    classes: list[ClassSummary] = []
+    recent_events: list[EventOut] = []
+    my_recent_uploads: list[MediaOut] = []

@@ -75,8 +75,8 @@ export default function PortalLayout({ children, role, sidebarItems }: PortalLay
         {/* Sidebar Header */}
         <div className="h-16 flex items-center px-6 border-b border-white/10 flex-shrink-0">
           <Link href="/" className="flex items-center">
-            <div className="relative w-40 h-10 bg-white/5 rounded p-1">
-              <Image src="/school_logo.jpeg" alt="School Logo" fill className="object-contain object-left" />
+            <div className="relative w-44 h-11">
+              <Image src="/logo.png" alt="Little Flowers School Logo" fill className="object-contain object-left" />
             </div>
           </Link>
           <button 

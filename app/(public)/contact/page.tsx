@@ -6,7 +6,7 @@ import PageHero from '@/components/ui/PageHero';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { SCHOOL_INFO } from '@/lib/mock-data';
-import { simulateDelay } from '@/lib/utils';
+import { submitContactForm } from '@/lib/enquiries';
 import { useToast } from '@/components/ui/Toast';
 
 export default function ContactPage() {
@@ -16,20 +16,35 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const name = (formData.get('name') as string)?.trim();
+    const email = (formData.get('email') as string)?.trim();
+    const phone = (formData.get('phone') as string)?.trim();
+    const subject = (formData.get('subject') as string)?.trim();
+    const message = (formData.get('message') as string)?.trim();
+    const website = (formData.get('website') as string)?.trim() || undefined;
+
     setLoading(true);
-    
-    // Simulate API call
-    await simulateDelay(1500);
-    
-    setLoading(false);
-    setSuccess(true);
-    showToast('Your message has been sent successfully. We will get back to you soon!', 'success');
-    
-    // Reset form
-    (e.target as HTMLFormElement).reset();
-    
-    // Reset success state after a while
-    setTimeout(() => setSuccess(false), 5000);
+    try {
+      await submitContactForm({
+        name,
+        email,
+        phone,
+        subject,
+        message,
+        website,
+      });
+
+      setSuccess(true);
+      showToast('Your message has been sent successfully. We will get back to you soon!', 'success');
+      form.reset();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to send message. Please try again.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -124,12 +139,23 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Honeypot field - invisible to humans, catches bots */}
+                    <input
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      className="hidden"
+                      aria-hidden="true"
+                    />
+
                     <div className="grid sm:grid-cols-2 gap-5">
                       <div className="space-y-1.5">
                         <label htmlFor="name" className="block text-sm font-medium text-navy">Full Name <span className="text-error">*</span></label>
                         <input 
                           type="text" 
                           id="name" 
+                          name="name"
                           required
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="John Doe"
@@ -140,6 +166,7 @@ export default function ContactPage() {
                         <input 
                           type="email" 
                           id="email" 
+                          name="email"
                           required
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="john@example.com"
@@ -153,6 +180,7 @@ export default function ContactPage() {
                         <input 
                           type="tel" 
                           id="phone" 
+                          name="phone"
                           required
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="+91 98765 43210"
@@ -162,12 +190,13 @@ export default function ContactPage() {
                         <label htmlFor="subject" className="block text-sm font-medium text-navy">Subject</label>
                         <select 
                           id="subject" 
+                          name="subject"
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all bg-white"
                         >
-                          <option value="general">General Inquiry</option>
-                          <option value="admissions">Admissions</option>
-                          <option value="feedback">Feedback</option>
-                          <option value="careers">Careers</option>
+                          <option value="General Inquiry">General Inquiry</option>
+                          <option value="Admissions">Admissions</option>
+                          <option value="Feedback">Feedback</option>
+                          <option value="Careers">Careers</option>
                         </select>
                       </div>
                     </div>
@@ -176,6 +205,7 @@ export default function ContactPage() {
                       <label htmlFor="message" className="block text-sm font-medium text-navy">Your Message <span className="text-error">*</span></label>
                       <textarea 
                         id="message" 
+                        name="message"
                         required
                         rows={5}
                         className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all resize-none"

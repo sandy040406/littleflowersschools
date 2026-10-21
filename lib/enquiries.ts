@@ -16,6 +16,8 @@ export interface Enquiry {
   grade_interested: string | null;
   preferred_contact: PreferredContact | null;
   message: string | null;
+  enquiry_type: 'admission' | 'contact';
+  subject: string | null;
   status: EnquiryStatus;
   admin_notes: string | null;
   created_at: string;
@@ -30,6 +32,15 @@ export interface EnquiryInput {
   grade_interested?: string;
   preferred_contact?: PreferredContact;
   message?: string;
+  website?: string; // honeypot — must stay empty
+}
+
+export interface ContactInput {
+  name: string;
+  email: string;
+  phone: string;
+  subject?: string;
+  message: string;
   website?: string; // honeypot — must stay empty
 }
 
@@ -55,8 +66,16 @@ export function submitEnquiry(input: EnquiryInput) {
   return api<Enquiry>('/api/enquiries', { method: 'POST', body: input, auth: false });
 }
 
-export function listEnquiries(status?: EnquiryStatus, signal?: AbortSignal) {
-  const qs = status ? `?status=${status}` : '';
+/** Public — submit contact us message */
+export function submitContactForm(input: ContactInput) {
+  return api<Enquiry>('/api/contact', { method: 'POST', body: input, auth: false });
+}
+
+export function listEnquiries(status?: EnquiryStatus, enquiryType?: string, signal?: AbortSignal) {
+  const params = new URLSearchParams();
+  if (status) params.set('status', status);
+  if (enquiryType && enquiryType !== 'all') params.set('enquiry_type', enquiryType);
+  const qs = params.toString() ? `?${params.toString()}` : '';
   return api<Enquiry[]>(`/api/enquiries${qs}`, { signal });
 }
 

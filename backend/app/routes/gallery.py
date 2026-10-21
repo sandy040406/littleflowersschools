@@ -29,7 +29,8 @@ from app.core.security import decode_token
 from app.models.gallery import Event, Media, MediaType, Visibility
 from app.models.user import User, UserRole
 from app.schemas.gallery import (
-    EventCreate, EventUpdate, EventOut, EventDetailOut, MediaOut
+    EventCreate, EventUpdate, EventOut, EventDetailOut, MediaOut,
+    TeacherDashboardSummary, ClassSummary
 )
 
 router = APIRouter(prefix="/api/gallery", tags=["Gallery"])
@@ -279,3 +280,67 @@ def delete_media(
 
     db.commit()
     storage.delete_file(key)
+
+
+@router.get("/teacher-summary", response_model=TeacherDashboardSummary)
+def get_teacher_summary(
+    db: Session = Depends(get_db),
+    user: User = Depends(staff_only),
+):
+    from app.models.student import Student
+    from sqlalchemy import func
+
+    my_events_count = db.query(Event).filter(Event.created_by == user.id).count()
+    total_events_count = db.query(Event).count()
+    my_uploads_count = db.query(Media).filter(Media.uploaded_by == user.id).count()
+
+    # Query distinct classes and student counts from Student table
+    class_rows = (
+        db.query(Student.class_name, Student.section, func.count(Student.id).label("student_count"))
+        .filter(Student.is_active == True)
+        .group_by(Student.class_name, Student.section)
+        .all()
+    )
+    classes = [
+        ClassSummary(
+            name=row[0],
+            section=row[1] or "A",
+            student_count=row[2],
+        )
+        for row in class_rows
+    ]
+
+    # Recent events
+    recent_events_raw = (
+        db.query(Event)
+        .order_by(Event.event_date.desc(), Event.id.desc())
+        .limit(5)
+        .all()
+    )
+    recent_events = [to_event_out(e, visible_media(e, user)) for e in recent_events_raw]
+
+    # Recent uploads by this teacher (or latest media if none by this teacher yet)
+    my_uploads = (
+        db.query(Media)
+        .filter(Media.uploaded_by == user.id)
+        .order_by(Media.id.desc())
+        .limit(6)
+        .all()
+    )
+    if not my_uploads:
+        my_uploads = (
+            db.query(Media)
+            .order_by(Media.id.desc())
+            .limit(6)
+            .all()
+        )
+
+    return TeacherDashboardSummary(
+        my_events_count=my_events_count,
+        total_events_count=total_events_count,
+        my_uploads_count=my_uploads_count,
+        classes=classes,
+        recent_events=recent_events,
+        my_recent_uploads=my_uploads,
+    )
+

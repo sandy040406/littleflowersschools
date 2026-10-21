@@ -27,6 +27,8 @@ class Enquiry(Base):
     grade_interested = Column(String(50), nullable=True)
     preferred_contact = Column(String(20), nullable=True, default="phone")
     message = Column(Text, nullable=True)
+    enquiry_type = Column(String(20), default="admission", nullable=False)
+    subject = Column(String(100), nullable=True)
 
     status = Column(Enum(EnquiryStatus), default=EnquiryStatus.new, nullable=False, index=True)
     admin_notes = Column(Text, nullable=True)

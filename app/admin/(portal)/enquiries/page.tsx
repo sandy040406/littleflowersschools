@@ -22,18 +22,19 @@ function csvCell(value: string | number | null | undefined): string {
 
 function exportEnquiriesCsv(rows: Enquiry[], filterLabel: string) {
   const headers = [
-    'ID', 'Submitted', 'Parent Name', 'Email', 'Phone', 'Preferred Contact',
-    'Student Name', 'Grade', 'Message', 'Status', 'Admin Notes',
+    'ID', 'Type', 'Submitted', 'Name', 'Email', 'Phone', 'Preferred Contact',
+    'Subject / Grade', 'Student Name', 'Message', 'Status', 'Admin Notes',
   ];
   const lines = rows.map((e) => [
     e.id,
+    e.enquiry_type === 'contact' ? 'Contact Message' : 'Admission Enquiry',
     new Date(e.created_at).toLocaleString(),
     e.parent_name,
     e.email,
     e.phone,
     e.preferred_contact,
-    e.student_name,
-    e.grade_interested,
+    e.enquiry_type === 'contact' ? (e.subject || 'General Inquiry') : (e.grade_interested || ''),
+    e.student_name || '',
     e.message,
     e.status,
     e.admin_notes,
@@ -43,7 +44,7 @@ function exportEnquiriesCsv(rows: Enquiry[], filterLabel: string) {
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const a = document.createElement('a');
   a.href = url;
-  a.download = `enquiries-${filterLabel}-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.download = `inquiries-${filterLabel}-${new Date().toISOString().slice(0, 10)}.csv`;
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -53,7 +54,8 @@ function exportEnquiriesCsv(rows: Enquiry[], filterLabel: string) {
 export default function AdminEnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<EnquiryStatus | 'all'>('all');
+  const [statusFilter, setStatusFilter] = useState<EnquiryStatus | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'admission' | 'contact'>('all');
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
@@ -62,7 +64,10 @@ export default function AdminEnquiriesPage() {
   const fetchEnquiries = async () => {
     setIsLoading(true);
     try {
-      const data = await listEnquiries(filter === 'all' ? undefined : filter);
+      const data = await listEnquiries(
+        statusFilter === 'all' ? undefined : statusFilter,
+        typeFilter === 'all' ? undefined : typeFilter
+      );
       setEnquiries(data);
     } catch (err) {
       console.error('Failed to load enquiries', err);
@@ -73,7 +78,7 @@ export default function AdminEnquiriesPage() {
 
   useEffect(() => {
     fetchEnquiries();
-  }, [filter]);
+  }, [statusFilter, typeFilter]);
 
   const handleStatusChange = async (id: number, newStatus: EnquiryStatus) => {
     try {
@@ -85,7 +90,7 @@ export default function AdminEnquiriesPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this enquiry? This action cannot be undone.')) {
+    if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
       try {
         await deleteEnquiry(id);
         setEnquiries(enquiries.filter(e => e.id !== id));
@@ -122,29 +127,46 @@ export default function AdminEnquiriesPage() {
     <div className="p-6 lg:p-8 animate-fade-in max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-navy mb-1">Admission Enquiries</h1>
-          <p className="text-text-secondary">Manage and respond to admission requests.</p>
+          <h1 className="text-2xl font-bold text-navy mb-1">Inquiries & Messages</h1>
+          <p className="text-text-secondary">Manage admission enquiries and contact form messages.</p>
         </div>
         
         <div className="flex flex-wrap items-center gap-3">
-          <label htmlFor="enquiry-status-filter" className="text-sm font-medium text-navy">Filter Status:</label>
-          <select 
-            id="enquiry-status-filter"
-            value={filter} 
-            onChange={(e) => setFilter(e.target.value as EnquiryStatus | 'all')}
-            className="border-border rounded-lg px-3 py-2 text-sm focus:ring-school-blue focus:border-school-blue"
-          >
-            <option value="all">All Enquiries</option>
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="closed">Closed</option>
-          </select>
+          <div className="flex items-center gap-2">
+            <label htmlFor="enquiry-type-filter" className="text-sm font-medium text-navy">Type:</label>
+            <select 
+              id="enquiry-type-filter"
+              value={typeFilter} 
+              onChange={(e) => setTypeFilter(e.target.value as any)}
+              className="border-border rounded-lg px-3 py-2 text-sm focus:ring-school-blue focus:border-school-blue bg-white"
+            >
+              <option value="all">All Types</option>
+              <option value="admission">Admissions</option>
+              <option value="contact">Contact Messages</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label htmlFor="enquiry-status-filter" className="text-sm font-medium text-navy">Status:</label>
+            <select 
+              id="enquiry-status-filter"
+              value={statusFilter} 
+              onChange={(e) => setStatusFilter(e.target.value as EnquiryStatus | 'all')}
+              className="border-border rounded-lg px-3 py-2 text-sm focus:ring-school-blue focus:border-school-blue bg-white"
+            >
+              <option value="all">All Statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+
           <Button
             id="export-enquiries-csv"
             variant="outline"
             size="sm"
             disabled={isLoading || enquiries.length === 0}
-            onClick={() => exportEnquiriesCsv(enquiries, filter)}
+            onClick={() => exportEnquiriesCsv(enquiries, `${typeFilter}-${statusFilter}`)}
           >
             <Download size={16} /> Export CSV
           </Button>
@@ -156,9 +178,9 @@ export default function AdminEnquiriesPage() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-soft-blue/50 border-b border-border text-sm text-text-secondary">
-                <th className="px-6 py-4 font-medium">Date</th>
-                <th className="px-6 py-4 font-medium">Parent & Contact</th>
-                <th className="px-6 py-4 font-medium">Student Info</th>
+                <th className="px-6 py-4 font-medium">Date & Type</th>
+                <th className="px-6 py-4 font-medium">Sender & Contact</th>
+                <th className="px-6 py-4 font-medium">Details</th>
                 <th className="px-6 py-4 font-medium">Message / Notes</th>
                 <th className="px-6 py-4 font-medium">Status</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
@@ -181,9 +203,18 @@ export default function AdminEnquiriesPage() {
                 enquiries.map((enq) => (
                   <tr key={enq.id} className="hover:bg-soft-blue/30 transition-colors group">
                     <td className="px-6 py-4 align-top">
-                      <span className="text-sm text-navy whitespace-nowrap">
+                      <span className="text-sm text-navy whitespace-nowrap block">
                         {new Date(enq.created_at).toLocaleDateString()}
                       </span>
+                      {enq.enquiry_type === 'contact' ? (
+                        <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-gold/15 text-gold-dark border border-gold/30">
+                          CONTACT
+                        </span>
+                      ) : (
+                        <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-school-blue/15 text-school-blue border border-school-blue/30">
+                          ADMISSION
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 align-top">
                       <div className="font-medium text-navy mb-1">{enq.parent_name}</div>
@@ -202,13 +233,18 @@ export default function AdminEnquiriesPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 align-top">
-                      {enq.student_name ? (
+                      {enq.enquiry_type === 'contact' ? (
+                        <div>
+                          <div className="text-sm text-navy font-semibold">{enq.subject || 'General Inquiry'}</div>
+                          <div className="text-xs text-text-muted mt-0.5">Contact Form</div>
+                        </div>
+                      ) : enq.student_name ? (
                         <>
                           <div className="text-sm text-navy font-medium">{enq.student_name}</div>
                           <div className="text-xs text-text-secondary">{enq.grade_interested || 'Grade not specified'}</div>
                         </>
                       ) : (
-                        <span className="text-sm text-text-muted italic">Not provided</span>
+                        <span className="text-sm text-text-muted italic">{enq.grade_interested || 'Grade not specified'}</span>
                       )}
                     </td>
                     <td className="px-6 py-4 align-top max-w-xs">

@@ -55,7 +55,7 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center flex-shrink-0 group">
             <div className="relative w-48 h-12 lg:w-56 lg:h-14">
-              <Image src="/school_logo.jpeg" alt="School Logo" fill className="object-contain object-left" priority />
+              <Image src="/logo.png" alt="Little Flowers School Logo" fill className="object-contain object-left" priority />
             </div>
           </Link>
 

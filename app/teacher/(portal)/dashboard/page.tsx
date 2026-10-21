@@ -11,48 +11,96 @@ import {
   UploadCloud,
   PlusCircle,
   Video,
-  Clock
+  Clock,
+  BookOpen,
+  Loader2
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { getMockUser } from '@/lib/auth';
-import { MOCK_TEACHERS, MOCK_CLASSES, MOCK_EVENTS, MOCK_MEDIA } from '@/lib/mock-data';
+import { useSession } from '@/lib/session';
+import { api, mediaUrl } from '@/lib/api';
 import { getGreeting, formatDate } from '@/lib/utils';
-import { Teacher, SchoolClass, SchoolEvent, MediaItem } from '@/lib/types';
+
+interface ClassSummary {
+  name: string;
+  section: string;
+  student_count: number;
+}
+
+interface EventData {
+  id: number;
+  title: string;
+  description?: string | null;
+  event_date: string;
+  category: string;
+  class_name?: string | null;
+  section?: string | null;
+  visibility: string;
+  cover_url?: string | null;
+  photo_count?: number;
+  video_count?: number;
+}
+
+interface MediaData {
+  id: number;
+  event_id: number;
+  uploaded_by?: number | null;
+  file_name: string;
+  url: string;
+  media_type: 'image' | 'video';
+  file_size: number;
+  title?: string | null;
+  visibility: string;
+  created_at: string;
+}
+
+interface TeacherDashboardSummary {
+  my_events_count: number;
+  total_events_count: number;
+  my_uploads_count: number;
+  classes: ClassSummary[];
+  recent_events: EventData[];
+  my_recent_uploads: MediaData[];
+}
 
 export default function TeacherDashboard() {
-  const user = getMockUser('teacher');
-  const [teacherData, setTeacherData] = useState<Teacher | null>(null);
-  const [assignedClasses, setAssignedClasses] = useState<SchoolClass[]>([]);
-  const [recentUploads, setRecentUploads] = useState<MediaItem[]>([]);
-  const [recentEvents, setRecentEvents] = useState<SchoolEvent[]>([]);
+  const session = useSession();
+  const [summary, setSummary] = useState<TeacherDashboardSummary | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      const teacher = MOCK_TEACHERS.find(t => t.id === user.id) || MOCK_TEACHERS[0];
-      setTeacherData(teacher);
-
-      const classes = teacher.assignedClasses.map(
-        classId => MOCK_CLASSES.find(c => c.id === classId)!
-      );
-      setAssignedClasses(classes);
-      
-      // Get events related to their classes (plus some public ones for demo)
-      const classIds = classes.map(c => c.id);
-      const events = MOCK_EVENTS.filter(e => 
-        e.visibility === 'public' || (e.classId && classIds.includes(e.classId))
-      ).slice(0, 3);
-      setRecentEvents(events);
-
-      // Get their recent uploads
-      const uploads = MOCK_MEDIA.filter(m => m.uploadedBy === teacher.id).slice(0, 4);
-      setRecentUploads(uploads);
+    let mounted = true;
+    async function loadData() {
+      try {
+        const data = await api<TeacherDashboardSummary>('/api/gallery/teacher-summary');
+        if (mounted) {
+          setSummary(data);
+        }
+      } catch (err) {
+        console.error('Failed to load teacher dashboard data', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-  }, [user]);
+    loadData();
+    return () => { mounted = false; };
+  }, []);
 
   const greeting = getGreeting();
+  const teacherName = session?.name || 'Teacher';
 
-  if (!teacherData) return <div className="p-8 text-center text-text-muted">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[350px] p-8 text-text-muted">
+        <Loader2 size={32} className="animate-spin text-school-blue mb-3" />
+        <p className="text-sm">Loading your dashboard...</p>
+      </div>
+    );
+  }
+
+  const assignedClasses = summary?.classes || [];
+  const recentEvents = summary?.recent_events || [];
+  const recentUploads = summary?.my_recent_uploads || [];
 
   return (
     <div className="space-y-6 lg:space-y-8 max-w-6xl mx-auto">
@@ -60,7 +108,7 @@ export default function TeacherDashboard() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-navy mb-2">
-            {greeting}, {teacherData.name.split(' ')[0]}
+            {greeting}, {teacherName.split(' ')[0]}
           </h1>
           <p className="text-text-secondary">Here is an overview of your classes and recent activities.</p>
         </div>
@@ -69,14 +117,56 @@ export default function TeacherDashboard() {
           <Button href="/teacher/gallery/upload" variant="outline" icon={<UploadCloud size={16} />}>
             Upload Media
           </Button>
-          <Button href="#" className="bg-gold hover:bg-gold-dark text-white" icon={<PlusCircle size={16} />}>
+          <Button href="/teacher/gallery" className="bg-gold hover:bg-gold-dark text-white" icon={<PlusCircle size={16} />}>
             Create Event
           </Button>
         </div>
       </div>
 
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card padding="sm" className="flex items-center gap-3 border-border/60">
+          <div className="w-12 h-12 rounded-xl bg-school-blue/10 text-school-blue flex items-center justify-center">
+            <Calendar size={22} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-secondary">My Events</p>
+            <p className="text-xl font-bold text-navy">{summary?.my_events_count ?? 0}</p>
+          </div>
+        </Card>
+
+        <Card padding="sm" className="flex items-center gap-3 border-border/60">
+          <div className="w-12 h-12 rounded-xl bg-gold/10 text-gold-dark flex items-center justify-center">
+            <ImageIcon size={22} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-secondary">My Uploads</p>
+            <p className="text-xl font-bold text-navy">{summary?.my_uploads_count ?? 0}</p>
+          </div>
+        </Card>
+
+        <Card padding="sm" className="flex items-center gap-3 border-border/60">
+          <div className="w-12 h-12 rounded-xl bg-navy/10 text-navy flex items-center justify-center">
+            <BookOpen size={22} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-secondary">Total Events</p>
+            <p className="text-xl font-bold text-navy">{summary?.total_events_count ?? 0}</p>
+          </div>
+        </Card>
+
+        <Card padding="sm" className="flex items-center gap-3 border-border/60">
+          <div className="w-12 h-12 rounded-xl bg-success/10 text-success flex items-center justify-center">
+            <Users size={22} />
+          </div>
+          <div>
+            <p className="text-xs font-medium text-text-secondary">Classes</p>
+            <p className="text-xl font-bold text-navy">{assignedClasses.length}</p>
+          </div>
+        </Card>
+      </div>
+
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-        
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6 lg:space-y-8">
           
@@ -84,75 +174,98 @@ export default function TeacherDashboard() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <Users size={20} className="text-school-blue" /> My Assigned Classes
+                <Users size={20} className="text-school-blue" /> School Classes
               </h2>
             </div>
             
-            <div className="grid sm:grid-cols-2 gap-4">
-              {assignedClasses.map((cls) => (
-                <Card key={cls.id} hover padding="sm" className="border-school-blue/20">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-bold text-navy text-lg">{cls.name}</h3>
-                      <p className="text-sm text-school-blue font-medium mb-3">Section {cls.section}</p>
+            {assignedClasses.length === 0 ? (
+              <Card className="p-6 text-center text-text-secondary">
+                No active student classes currently registered.
+              </Card>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {assignedClasses.map((cls, idx) => (
+                  <Card key={`${cls.name}-${cls.section}-${idx}`} hover padding="sm" className="border-school-blue/20">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-bold text-navy text-lg">{cls.name}</h3>
+                        <p className="text-sm text-school-blue font-medium mb-3">Section {cls.section}</p>
+                      </div>
+                      <div className="bg-soft-blue text-navy text-xs font-bold px-2 py-1 rounded">
+                        {cls.student_count} Student{cls.student_count === 1 ? '' : 's'}
+                      </div>
                     </div>
-                    <div className="bg-soft-blue text-navy text-xs font-bold px-2 py-1 rounded">
-                      {cls.studentCount} Students
+                    <div className="pt-3 border-t border-border flex justify-between items-center">
+                      <span className="text-xs text-text-secondary">
+                        Active Class
+                      </span>
+                      <Link href={`/teacher/gallery`} className="text-sm font-semibold text-school-blue flex items-center gap-1 hover:underline">
+                        Class Gallery <ChevronRight size={14} />
+                      </Link>
                     </div>
-                  </div>
-                  <div className="pt-3 border-t border-border flex justify-between items-center">
-                    <span className="text-xs text-text-secondary">
-                      {cls.classTeacherId === teacherData.id ? 'Class Teacher' : 'Subject Teacher'}
-                    </span>
-                    <Link href={`/teacher/gallery/${cls.id}`} className="text-sm font-semibold text-school-blue flex items-center gap-1 hover:underline">
-                      Class Gallery <ChevronRight size={14} />
-                    </Link>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent Events */}
           <div>
-            <h2 className="text-lg font-bold text-navy mb-4 flex items-center gap-2">
-              <Calendar size={20} className="text-school-blue" /> Recent Events
-            </h2>
-            <Card padding="none" className="overflow-hidden">
-              <ul className="divide-y divide-border">
-                {recentEvents.map(event => (
-                  <li key={event.id} className="p-4 hover:bg-soft-blue/50 transition-colors flex items-center justify-between gap-4">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-soft-blue flex-shrink-0 overflow-hidden relative">
-                        <Image src={event.imageUrl} alt={event.title} fill className="object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-navy text-sm mb-1">{event.title}</h4>
-                        <div className="flex items-center gap-3 text-xs text-text-secondary">
-                          <span className="flex items-center gap-1"><Clock size={12} /> {formatDate(event.date)}</span>
-                          <span className="text-border">•</span>
-                          <span>{event.className || 'All Classes'}</span>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+                <Calendar size={20} className="text-school-blue" /> Recent Events
+              </h2>
+              <Link href="/teacher/gallery" className="text-sm font-medium text-school-blue hover:underline">
+                View All
+              </Link>
+            </div>
+
+            {recentEvents.length === 0 ? (
+              <Card className="p-6 text-center text-text-secondary">
+                No events recorded yet.
+              </Card>
+            ) : (
+              <Card padding="none" className="overflow-hidden">
+                <ul className="divide-y divide-border">
+                  {recentEvents.map(event => (
+                    <li key={event.id} className="p-4 hover:bg-soft-blue/50 transition-colors flex items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-soft-blue flex-shrink-0 overflow-hidden relative">
+                          {event.cover_url ? (
+                            <Image src={mediaUrl(event.cover_url)} alt={event.title} fill className="object-cover" unoptimized />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-school-blue/40">
+                              <Calendar size={20} />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-navy text-sm mb-1">{event.title}</h4>
+                          <div className="flex items-center gap-3 text-xs text-text-secondary">
+                            <span className="flex items-center gap-1"><Clock size={12} /> {formatDate(event.event_date)}</span>
+                            <span className="text-border">•</span>
+                            <span>{event.class_name || 'All Classes'}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <Link href={`/teacher/gallery/upload?eventId=${event.id}`} className="text-school-blue hover:text-navy p-2 rounded-lg hover:bg-school-blue/10 transition-colors" title="Upload Media">
-                      <UploadCloud size={18} />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Card>
+                      <Link href={`/teacher/gallery/upload?eventId=${event.id}`} className="text-school-blue hover:text-navy p-2 rounded-lg hover:bg-school-blue/10 transition-colors" title="Upload Media">
+                        <UploadCloud size={18} />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </Card>
+            )}
           </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6 lg:space-y-8">
-          
           {/* Recent Uploads */}
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-navy flex items-center gap-2">
-                <ImageIcon size={20} className="text-gold-dark" /> My Recent Uploads
+                <ImageIcon size={20} className="text-gold-dark" /> Recent Uploads
               </h2>
               <Link href="/teacher/gallery" className="text-xs font-medium text-school-blue hover:underline">
                 View All
@@ -162,12 +275,12 @@ export default function TeacherDashboard() {
             {recentUploads.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {recentUploads.map(media => (
-                  <div key={media.id} className="relative aspect-square rounded-lg overflow-hidden group">
-                    <Image src={media.thumbnailUrl} alt="Upload" fill className="object-cover" />
+                  <div key={media.id} className="relative aspect-square rounded-lg overflow-hidden group bg-soft-blue">
+                    <Image src={mediaUrl(media.url)} alt="Upload" fill className="object-cover" unoptimized />
                     <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2">
-                      <p className="text-[10px] text-white font-medium truncate">{media.fileName}</p>
+                      <p className="text-[10px] text-white font-medium truncate">{media.file_name}</p>
                     </div>
-                    {media.fileType === 'video' && (
+                    {media.media_type === 'video' && (
                       <div className="absolute top-1 right-1 bg-navy/80 rounded p-1">
                         <Video size={10} className="text-white" />
                       </div>
@@ -177,7 +290,7 @@ export default function TeacherDashboard() {
               </div>
             ) : (
               <div className="text-center py-6 bg-soft-blue rounded-lg border border-border border-dashed">
-                <p className="text-sm text-text-secondary">You haven't uploaded any media recently.</p>
+                <p className="text-sm text-text-secondary">No media uploaded recently.</p>
               </div>
             )}
             

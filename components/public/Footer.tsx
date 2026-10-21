@@ -21,8 +21,8 @@ export default function Footer() {
           {/* School Column */}
           <div className="sm:col-span-2 lg:col-span-1">
             <div className="flex items-center mb-6">
-              <div className="relative w-48 h-12 lg:w-56 lg:h-14 bg-white/5 rounded-lg p-1">
-                <Image src="/school_logo.jpeg" alt="School Logo" fill className="object-contain object-left" />
+              <div className="relative w-48 h-12 lg:w-56 lg:h-14">
+                <Image src="/logo.png" alt="Little Flowers School Logo" fill className="object-contain object-left" />
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-5 max-w-xs">

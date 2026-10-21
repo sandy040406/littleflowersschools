@@ -11,49 +11,86 @@ import {
   Clock,
   MapPin,
   FileText,
-  Phone
+  Phone,
+  Loader2
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { getMockUser } from '@/lib/auth';
-import { MOCK_PARENTS, MOCK_STUDENTS, MOCK_EVENTS, MOCK_CLASSES } from '@/lib/mock-data';
+import { useSession } from '@/lib/session';
+import { api, mediaUrl } from '@/lib/api';
 import { getGreeting, formatDate } from '@/lib/utils';
-import { Parent, Student, SchoolClass } from '@/lib/types';
+
+interface ChildData {
+  id: number;
+  name: string;
+  admission_number: string;
+  class_name: string;
+  section: string;
+  roll_number?: string | null;
+  admission_date?: string | null;
+  is_active: boolean;
+}
+
+interface EventData {
+  id: number;
+  title: string;
+  description?: string | null;
+  event_date: string;
+  category: string;
+  class_name?: string | null;
+  section?: string | null;
+  visibility: string;
+  cover_url?: string | null;
+  photo_count?: number;
+  video_count?: number;
+}
 
 export default function ParentDashboard() {
-  const user = getMockUser('parent');
-  const [parentData, setParentData] = useState<Parent | null>(null);
-  const [childrenData, setChildrenData] = useState<{ student: Student, schoolClass: SchoolClass }[]>([]);
+  const session = useSession();
+  const [children, setChildren] = useState<ChildData[]>([]);
+  const [events, setEvents] = useState<EventData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      // Get parent data
-      const parent = MOCK_PARENTS.find(p => p.id === user.id) || MOCK_PARENTS[0];
-      setParentData(parent);
-
-      // Get children data
-      const kids = parent.children.map(childId => {
-        const student = MOCK_STUDENTS.find(s => s.id === childId)!;
-        const schoolClass = MOCK_CLASSES.find(c => c.id === student.classId)!;
-        return { student, schoolClass };
-      });
-      setChildrenData(kids);
+    let mounted = true;
+    async function loadData() {
+      try {
+        const [kids, evts] = await Promise.all([
+          api<ChildData[]>('/api/auth/me/children').catch(() => []),
+          api<EventData[]>('/api/gallery/events').catch(() => []),
+        ]);
+        if (mounted) {
+          setChildren(kids || []);
+          setEvents(evts || []);
+        }
+      } catch (err) {
+        console.error('Failed to load parent dashboard data', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
-  }, [user]);
+    loadData();
+    return () => { mounted = false; };
+  }, []);
 
   const greeting = getGreeting();
-  
-  // Get recent events (first 2)
-  const recentEvents = MOCK_EVENTS.slice(0, 2);
+  const parentName = session?.name || 'Parent';
 
-  if (!parentData) return <div className="p-8 text-center text-text-muted">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[350px] p-8 text-text-muted">
+        <Loader2 size={32} className="animate-spin text-school-blue mb-3" />
+        <p className="text-sm">Loading your dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 lg:space-y-8 max-w-6xl mx-auto">
       {/* Welcome Section */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-navy mb-2">
-          {greeting}, {parentData.name.split(' ')[0]}
+          {greeting}, {parentName.split(' ')[0]}
         </h1>
         <p className="text-text-secondary">Here's what's happening with your children today.</p>
       </div>
@@ -63,32 +100,44 @@ export default function ParentDashboard() {
         <h2 className="text-lg font-bold text-navy mb-4 flex items-center gap-2">
           <GraduationCap size={20} className="text-school-blue" /> My Children
         </h2>
-        <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
-          {childrenData.map(({ student, schoolClass }) => (
-            <Card key={student.id} hover className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-full bg-soft-blue flex-shrink-0 flex items-center justify-center text-xl font-bold text-school-blue">
-                {student.name.charAt(0)}
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-navy leading-tight">{student.name}</h3>
-                <p className="text-sm font-medium text-school-blue mb-3">
-                  {schoolClass.name} – Section {student.section}
-                </p>
-                <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold text-text-primary">Roll No:</span> {student.rollNumber}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-semibold text-text-primary">Status:</span> 
-                    <span className="text-success flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-success"></span> Active
-                    </span>
+        {children.length === 0 ? (
+          <Card className="p-6 text-center text-text-secondary">
+            <p>No student records are currently linked to this parent account.</p>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
+            {children.map((child) => (
+              <Card key={child.id} hover className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-full bg-soft-blue flex-shrink-0 flex items-center justify-center text-xl font-bold text-school-blue">
+                  {child.name.charAt(0)}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-navy leading-tight">{child.name}</h3>
+                  <p className="text-sm font-medium text-school-blue mb-3">
+                    {child.class_name} – Section {child.section}
+                  </p>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold text-text-primary">Adm No:</span> {child.admission_number}
+                    </div>
+                    {child.roll_number && (
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold text-text-primary">Roll No:</span> {child.roll_number}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <span className="font-semibold text-text-primary">Status:</span> 
+                      <span className={child.is_active ? "text-success flex items-center gap-1" : "text-danger flex items-center gap-1"}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${child.is_active ? 'bg-success' : 'bg-danger'}`}></span>
+                        {child.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
@@ -106,42 +155,57 @@ export default function ParentDashboard() {
               </Link>
             </div>
             
-            <div className="space-y-4">
-              {recentEvents.map(event => (
-                <Card key={event.id} padding="none" hover className="flex flex-col sm:flex-row overflow-hidden">
-                  <div className="sm:w-40 h-40 sm:h-auto relative bg-soft-blue flex-shrink-0">
-                    <Image 
-                      src={event.imageUrl}
-                      alt={event.title}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
-                    <div>
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-bold text-navy">{event.title}</h3>
-                        <span className="text-xs font-medium bg-soft-blue text-school-blue px-2 py-0.5 rounded-full">
-                          {event.category}
-                        </span>
-                      </div>
-                      <p className="text-xs text-text-muted flex items-center gap-1 mb-2">
-                        <Clock size={12} /> {formatDate(event.date)}
-                      </p>
-                      <p className="text-sm text-text-secondary line-clamp-2 mb-3">
-                        {event.description}
-                      </p>
+            {events.length === 0 ? (
+              <Card className="p-8 text-center text-text-secondary">
+                No school events posted yet.
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {events.slice(0, 3).map((event) => (
+                  <Card key={event.id} padding="none" hover className="flex flex-col sm:flex-row overflow-hidden">
+                    <div className="sm:w-40 h-40 sm:h-auto relative bg-soft-blue flex-shrink-0">
+                      {event.cover_url ? (
+                        <Image 
+                          src={mediaUrl(event.cover_url)}
+                          alt={event.title}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="w-full h-full min-h-[140px] flex items-center justify-center text-school-blue/40">
+                          <Calendar size={36} />
+                        </div>
+                      )}
                     </div>
-                    <Link 
-                      href={`/parent/gallery/${event.id}`}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-school-blue hover:text-navy transition-colors mt-auto"
-                    >
-                      View Event Gallery <ChevronRight size={16} />
-                    </Link>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                    <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-bold text-navy">{event.title}</h3>
+                          <span className="text-xs font-medium bg-soft-blue text-school-blue px-2 py-0.5 rounded-full capitalize">
+                            {event.category}
+                          </span>
+                        </div>
+                        <p className="text-xs text-text-muted flex items-center gap-1 mb-2">
+                          <Clock size={12} /> {formatDate(event.event_date)}
+                        </p>
+                        {event.description && (
+                          <p className="text-sm text-text-secondary line-clamp-2 mb-3">
+                            {event.description}
+                          </p>
+                        )}
+                      </div>
+                      <Link 
+                        href={`/parent/gallery`}
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-school-blue hover:text-navy transition-colors mt-auto"
+                      >
+                        View Event Gallery <ChevronRight size={16} />
+                      </Link>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -152,34 +216,34 @@ export default function ParentDashboard() {
             <h2 className="text-lg font-bold text-navy mb-4 flex items-center gap-2">
               <ImageIcon size={20} className="text-school-blue" /> New in Gallery
             </h2>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <div className="w-16 h-16 rounded-lg bg-soft-blue overflow-hidden relative flex-shrink-0">
-                  <Image src={MOCK_EVENTS[2].imageUrl} alt="Event" fill className="object-cover" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-navy leading-tight mb-1">Photos from Science Exhibition</p>
-                  <p className="text-xs text-text-secondary mb-2">Added 2 days ago for Class IV</p>
-                  <Link href={`/parent/gallery/${MOCK_EVENTS[2].id}`} className="text-xs font-medium text-school-blue hover:underline">
-                    View Photos
-                  </Link>
-                </div>
+            {events.length > 0 ? (
+              <div className="space-y-4">
+                {events.slice(0, 2).map((event) => (
+                  <div key={event.id} className="flex gap-3">
+                    <div className="w-16 h-16 rounded-lg bg-soft-blue overflow-hidden relative flex-shrink-0">
+                      {event.cover_url ? (
+                        <Image src={mediaUrl(event.cover_url)} alt={event.title} fill className="object-cover" unoptimized />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-school-blue/50">
+                          <ImageIcon size={20} />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-navy leading-tight mb-1 truncate">{event.title}</p>
+                      <p className="text-xs text-text-secondary mb-2">{formatDate(event.event_date)}</p>
+                      <Link href={`/parent/gallery`} className="text-xs font-medium text-school-blue hover:underline">
+                        View Photos ({event.photo_count || 0})
+                      </Link>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div className="flex gap-3">
-                <div className="w-16 h-16 rounded-lg bg-soft-blue overflow-hidden relative flex-shrink-0">
-                  <Image src={MOCK_EVENTS[1].imageUrl} alt="Event" fill className="object-cover" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-navy leading-tight mb-1">Sports Day Videos</p>
-                  <p className="text-xs text-text-secondary mb-2">Added last week</p>
-                  <Link href={`/parent/gallery/${MOCK_EVENTS[1].id}`} className="text-xs font-medium text-school-blue hover:underline">
-                    Watch Videos
-                  </Link>
-                </div>
-              </div>
-            </div>
+            ) : (
+              <p className="text-xs text-text-secondary">No recent photos uploaded.</p>
+            )}
             <Button href="/parent/gallery" variant="outline" size="sm" className="w-full mt-4">
-              Go to My Gallery
+              Go to Gallery
             </Button>
           </Card>
 

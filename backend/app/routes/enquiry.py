@@ -20,9 +20,12 @@ from app.core.deps import require_role
 from app.core.ratelimit import RateLimiter
 from app.models.user import User, UserRole
 from app.models.enquiry import Enquiry, EnquiryStatus
-from app.schemas.enquiry import EnquiryCreate, EnquiryUpdate, EnquiryOut, EnquiryStats
+from app.schemas.enquiry import (
+    EnquiryCreate, ContactCreate, EnquiryUpdate, EnquiryOut, EnquiryStats
+)
 
 router = APIRouter(prefix="/api/enquiries", tags=["Admission Enquiries"])
+contact_router = APIRouter(prefix="/api/contact", tags=["Contact Messages"])
 
 admin_only = require_role([UserRole.admin])
 
@@ -47,16 +50,40 @@ def create_enquiry(body: EnquiryCreate, db: Session = Depends(get_db)):
     return enquiry
 
 
+@contact_router.post("", response_model=EnquiryOut, status_code=201, dependencies=[Depends(enquiry_limit)])
+def submit_contact(body: ContactCreate, db: Session = Depends(get_db)):
+    """Public endpoint for visitors to submit a contact us message."""
+    if body.website:  # honeypot tripped (hidden field filled) — reject, store nothing
+        raise HTTPException(status_code=400, detail="Invalid submission")
+
+    enquiry = Enquiry(
+        parent_name=body.name,
+        email=body.email,
+        phone=body.phone,
+        subject=body.subject or "General Inquiry",
+        message=body.message,
+        enquiry_type="contact",
+        status=EnquiryStatus.new,
+    )
+    db.add(enquiry)
+    db.commit()
+    db.refresh(enquiry)
+    return enquiry
+
+
 @router.get("", response_model=list[EnquiryOut])
 def list_enquiries(
     status: Optional[EnquiryStatus] = None,
+    enquiry_type: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(admin_only),
 ):
-    """List admission enquiries, newest first (Admin only)."""
+    """List admission enquiries & contact messages, newest first (Admin only)."""
     q = db.query(Enquiry)
     if status is not None:
         q = q.filter(Enquiry.status == status)
+    if enquiry_type and enquiry_type != "all":
+        q = q.filter(Enquiry.enquiry_type == enquiry_type)
     return q.order_by(Enquiry.created_at.desc(), Enquiry.id.desc()).all()
 
 

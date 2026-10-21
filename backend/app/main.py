@@ -137,6 +137,7 @@ app.include_router(content.router)
 app.include_router(upload.router)
 app.include_router(gallery.router)
 app.include_router(enquiry.router)
+app.include_router(enquiry.contact_router)
 
 
 # ── Health Check ────────────────────────────────────────────
