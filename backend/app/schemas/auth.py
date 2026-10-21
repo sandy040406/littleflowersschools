@@ -2,6 +2,7 @@
 Pydantic schemas for authentication requests and responses.
 """
 
+from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 
@@ -135,3 +136,47 @@ class CreateStudent(BaseModel):
     parent_name: str
     parent_phone: Optional[str] = None
     parent_email: Optional[str] = None
+
+
+class StudentOut(BaseModel):
+    id: int
+    name: str
+    admission_number: str
+    date_of_birth: str
+    class_name: str
+    section: str
+    roll_number: Optional[str] = None
+    admission_date: Optional[str] = None
+    is_active: bool
+    parent_id: Optional[int] = None
+    parent_name: Optional[str] = None
+    parent_email: Optional[str] = None
+    parent_phone: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class StudentUpdate(BaseModel):
+    name: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    class_name: Optional[str] = None
+    section: Optional[str] = None
+    roll_number: Optional[str] = None
+    admission_date: Optional[str] = None
+    is_active: Optional[bool] = None
+
+
+class PromoteClassRequest(BaseModel):
+    from_class: str
+    to_class: str
+    from_section: Optional[str] = None
+    to_section: Optional[str] = None
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None

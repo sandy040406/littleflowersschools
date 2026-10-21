@@ -28,6 +28,19 @@ class Student(Base):
 
     # FK → parent user
     parent_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    parent = relationship("User", foreign_keys=[parent_id], lazy="joined")
+
+    @property
+    def parent_name(self):
+        return self.parent.name if self.parent else None
+
+    @property
+    def parent_email(self):
+        return self.parent.email if self.parent else None
+
+    @property
+    def parent_phone(self):
+        return self.parent.phone if self.parent else None
 
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(
