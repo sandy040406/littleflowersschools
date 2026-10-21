@@ -7,7 +7,7 @@ const sidebarItems = [
   { label: 'User Management', href: '/admin/users', icon: <Users size={20} /> },
   { label: 'Announcements', href: '/admin/content/announcements', icon: <Megaphone size={20} /> },
   { label: 'Hero Slider', href: '/admin/content/slider', icon: <MonitorPlay size={20} /> },
-  { label: 'Gallery & Events', href: '#', icon: <ImageIcon size={20} /> },
+  { label: 'Gallery & Events', href: '/admin/gallery', icon: <ImageIcon size={20} /> },
   { label: 'Settings', href: '#', icon: <Settings size={20} /> },
 ];
 

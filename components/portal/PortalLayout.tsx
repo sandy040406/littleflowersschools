@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X, LogOut, Bell, Search, UserCircle, Loader2 } from 'lucide-react';
+import { Menu, X, LogOut, Bell, Search, UserCircle, Loader2, KeyRound } from 'lucide-react';
 import { UserRole } from '@/lib/types';
 import { logout } from '@/lib/auth';
 import { useSession, useHydrated } from '@/lib/session';
@@ -29,6 +29,9 @@ export default function PortalLayout({ children, role, sidebarItems }: PortalLay
   const session = useSession();
   const authorized = session?.role === role;
   const user = authorized ? { name: session.name } : null;
+  const accountHref = `/${role}/account`;
+  // First-login parents / admin-reset users must set a new password before anything else
+  const mustChangePassword = authorized && !!session?.mustChangePassword && pathname !== accountHref;
 
   // Redirect to the right login page if not signed in for this portal
   useEffect(() => {
@@ -36,6 +39,13 @@ export default function PortalLayout({ children, role, sidebarItems }: PortalLay
       router.replace(`/${role}/login`);
     }
   }, [hydrated, authorized, role, router]);
+
+  // Force the change-password screen while a password change is pending
+  useEffect(() => {
+    if (hydrated && mustChangePassword) {
+      router.replace(accountHref);
+    }
+  }, [hydrated, mustChangePassword, accountHref, router]);
 
   // Close sidebar on mobile when navigating
   useEffect(() => {
@@ -47,7 +57,7 @@ export default function PortalLayout({ children, role, sidebarItems }: PortalLay
     router.replace(`/${role}/login`);
   };
 
-  if (!hydrated || !authorized) {
+  if (!hydrated || !authorized || mustChangePassword) {
     return (
       <div className="flex h-screen items-center justify-center bg-soft-blue" aria-busy="true">
         <Loader2 className="animate-spin text-school-blue" size={32} />
@@ -149,7 +159,18 @@ export default function PortalLayout({ children, role, sidebarItems }: PortalLay
         </nav>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-white/10 space-y-1">
+          <Link
+            id="portal-change-password"
+            href={accountHref}
+            aria-current={pathname === accountHref ? 'page' : undefined}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors w-full ${
+              pathname === accountHref ? 'bg-school-blue text-white shadow-md' : 'text-white/70 hover:bg-white/5 hover:text-white'
+            }`}
+          >
+            <KeyRound size={18} />
+            Change Password
+          </Link>
           <button
             id="portal-sign-out"
             type="button"

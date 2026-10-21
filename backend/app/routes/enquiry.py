@@ -34,10 +34,15 @@ enquiry_limit = RateLimiter(
     max_requests=_settings.ENQUIRY_RATE_LIMIT,
     window_seconds=_settings.ENQUIRY_RATE_WINDOW_SECONDS,
 )
+# Separate counter so the two public forms don't use up each other's quota.
+contact_limit = RateLimiter(
+    max_requests=_settings.ENQUIRY_RATE_LIMIT,
+    window_seconds=_settings.ENQUIRY_RATE_WINDOW_SECONDS,
+)
 
 
-@router.post("", response_model=EnquiryOut, status_code=201, dependencies=[Depends(enquiry_limit)])
-def create_enquiry(body: EnquiryCreate, db: Session = Depends(get_db)):
+@router.post("", response_model=EnquiryOut, status_code=201)
+def create_enquiry(body: EnquiryCreate, _: None = Depends(enquiry_limit), db: Session = Depends(get_db)):
     """Public endpoint for parents to submit an admission enquiry."""
     if body.website:  # honeypot tripped (hidden field filled) — reject, store nothing
         raise HTTPException(status_code=400, detail="Invalid submission")
@@ -50,8 +55,8 @@ def create_enquiry(body: EnquiryCreate, db: Session = Depends(get_db)):
     return enquiry
 
 
-@contact_router.post("", response_model=EnquiryOut, status_code=201, dependencies=[Depends(enquiry_limit)])
-def submit_contact(body: ContactCreate, db: Session = Depends(get_db)):
+@contact_router.post("", response_model=EnquiryOut, status_code=201)
+def submit_contact(body: ContactCreate, _: None = Depends(contact_limit), db: Session = Depends(get_db)):
     """Public endpoint for visitors to submit a contact us message."""
     if body.website:  # honeypot tripped (hidden field filled) — reject, store nothing
         raise HTTPException(status_code=400, detail="Invalid submission")

@@ -81,11 +81,11 @@ export default function EnquiryPage() {
                   <p className="text-text-secondary">Please provide accurate information so we can assist you better.</p>
                 </div>
                 
-                <form onSubmit={handleSubmit} className="space-y-8">
+                <form onSubmit={handleSubmit} className="space-y-8" suppressHydrationWarning>
                   {/* Honeypot — hidden from humans, catches spam bots */}
                   <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
                     <label htmlFor="website">Website</label>
-                    <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+                    <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" suppressHydrationWarning />
                   </div>
 
                   {error && (
@@ -110,6 +110,7 @@ export default function EnquiryPage() {
                           name="parent_name"
                           autoComplete="name" 
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                           placeholder="e.g. Rahul Sharma"
                         />
@@ -122,6 +123,7 @@ export default function EnquiryPage() {
                           name="phone"
                           autoComplete="tel" 
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                           placeholder="+91 98765 43210"
                         />
@@ -134,6 +136,7 @@ export default function EnquiryPage() {
                           name="email"
                           autoComplete="email" 
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                           placeholder="rahul@example.com"
                         />
@@ -156,6 +159,7 @@ export default function EnquiryPage() {
                           id="studentName"
                           name="student_name" 
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                           placeholder="e.g. Aarav Sharma"
                         />
@@ -166,6 +170,7 @@ export default function EnquiryPage() {
                           id="studentClass"
                           name="grade_interested" 
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                         >
                           <option value="">Select Class...</option>
@@ -192,6 +197,7 @@ export default function EnquiryPage() {
                         <select 
                           id="preferredContact"
                           name="preferred_contact" 
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                         >
                           <option value="phone">Phone Call</option>
@@ -208,6 +214,7 @@ export default function EnquiryPage() {
                         name="message"
                         maxLength={2000} 
                         rows={4}
+                        suppressHydrationWarning
                         className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white resize-none"
                         placeholder="Let us know if you have any specific questions about curriculum, transport, timings, etc."
                       />

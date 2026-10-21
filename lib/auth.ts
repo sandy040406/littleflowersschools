@@ -19,6 +19,7 @@ interface TokenResponse {
   role: UserRole;
   user_id: number;
   name: string;
+  must_change_password?: boolean;
 }
 
 function failure(err: unknown): LoginResult {
@@ -50,18 +51,42 @@ export async function loginWithEmail(
   }
 }
 
-/** Parent login: admission number + DOB (YYYY-MM-DD). */
-export async function loginParent(admissionNumber: string, dateOfBirth: string): Promise<LoginResult> {
+/**
+ * Parent login. First time: admission number + DOB (YYYY-MM-DD).
+ * After they've set a password: admission number + password.
+ */
+export async function loginParent(
+  admissionNumber: string,
+  credential: string,
+  mode: 'dob' | 'password' = 'dob'
+): Promise<LoginResult> {
   try {
     const res = await api<TokenResponse>('/api/auth/login/parent', {
       method: 'POST',
-      body: { admission_number: admissionNumber.trim(), date_of_birth: dateOfBirth },
+      body: {
+        admission_number: admissionNumber.trim(),
+        ...(mode === 'dob' ? { date_of_birth: credential } : { password: credential }),
+      },
       auth: false,
     });
     setSession(toSession(res));
     return { success: true };
   } catch (err) {
     return failure(err);
+  }
+}
+
+/** Change the signed-in user's own password. Refreshes the session tokens. */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<LoginResult> {
+  try {
+    const res = await api<TokenResponse>('/api/auth/change-password', {
+      method: 'POST',
+      body: { current_password: currentPassword, new_password: newPassword },
+    });
+    setSession(toSession(res));
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof ApiError ? err.message : 'Could not change password. Please try again.' };
   }
 }
 

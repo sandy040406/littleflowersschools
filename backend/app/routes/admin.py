@@ -6,9 +6,11 @@ Admin-only routes for managing users (teachers, students/parents).
   POST   /api/admin/students           → Create a student + parent login
   DELETE /api/admin/users/{user_id}    → Deactivate a user
   PUT    /api/admin/users/{user_id}/activate → Re-activate a user
+  POST   /api/admin/users/{user_id}/reset-password → Reset a user's password
 """
 
 from typing import Optional
+import secrets
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 
@@ -18,7 +20,7 @@ from app.core.security import hash_password
 from app.models.user import User, UserRole
 from app.models.student import Student
 from app.models.gallery import Media
-from app.schemas.auth import CreateTeacher, CreateStudent, UserOut
+from app.schemas.auth import CreateTeacher, CreateStudent, UserOut, ResetPasswordRequest
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -199,3 +201,48 @@ def activate_user(
     user.is_active = True
     db.commit()
     return {"message": f"User '{user.name}' has been re-activated."}
+
+
+@router.post("/users/{user_id}/reset-password")
+def reset_user_password(
+    user_id: int,
+    body: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_only),
+):
+    """
+    Reset another user's password.
+
+    - Teacher / admin: sets a new (given or generated) temporary password and
+      forces them to change it at next login. The temporary password is
+      returned once — share it with the user securely.
+    - Parent: clears their password so they sign in with the child's date of
+      birth again, and must then choose a new password.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if user.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Use 'Change Password' to update your own password.",
+        )
+
+    if user.role == UserRole.parent:
+        user.hashed_password = None
+        user.must_change_password = True
+        db.commit()
+        return {
+            "message": f"Password for '{user.name}' was reset. They can sign in with their child's date of birth and will be asked to choose a new password.",
+            "temporary_password": None,
+        }
+
+    temp_password = body.new_password or secrets.token_urlsafe(9)
+    user.hashed_password = hash_password(temp_password)
+    user.must_change_password = True
+    db.commit()
+    return {
+        "message": f"Password for '{user.name}' was reset. They must change it at next login.",
+        "temporary_password": temp_password,
+    }

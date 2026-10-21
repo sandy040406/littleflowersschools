@@ -39,6 +39,11 @@ class User(Base):
     # Auth — for Admin & Teacher (hashed password)
     hashed_password = Column(String(255), nullable=True)
 
+    # When True the user must set a new password before using the portal
+    # (set by an admin password reset). Parents without a password yet are
+    # also forced to set one — see `needs_password_change`.
+    must_change_password = Column(Boolean, default=False, nullable=False)
+
     # Auth — for Parent (admission_number login)
     # Parents don't use email/password; they use admission_number + DOB
     admission_number = Column(String(50), unique=True, nullable=True, index=True)
@@ -59,6 +64,13 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+
+    @property
+    def needs_password_change(self) -> bool:
+        """True on a parent's first login (still on DOB) or after an admin reset."""
+        if self.must_change_password:
+            return True
+        return self.role == UserRole.parent and not self.hashed_password
 
     def __repr__(self) -> str:
         return f"<User id={self.id} role={self.role} name={self.name}>"

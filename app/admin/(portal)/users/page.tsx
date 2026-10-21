@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, UserCircle, Mail, Phone, MoreVertical, X, Shield, BookOpen, GraduationCap, RefreshCw, Trash2 } from 'lucide-react';
+import { Search, Plus, UserCircle, Mail, Phone, MoreVertical, X, Shield, BookOpen, GraduationCap, RefreshCw, Trash2, KeyRound } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -32,6 +32,7 @@ export default function AdminUsersPage() {
   const [addMode, setAddMode] = useState<'teacher' | 'student'>('teacher');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
+  const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
 
   const [teacherForm, setTeacherForm] = useState({ name: '', email: '', password: '', phone: '', designation: '' });
   const [studentForm, setStudentForm] = useState({ name: '', admission_number: '', date_of_birth: '', class_name: '', parent_name: '', parent_phone: '', parent_email: '' });
@@ -81,6 +82,27 @@ export default function AdminUsersPage() {
       fetchUsers();
     } catch (err: any) {
       showToast(err.message || `Failed to ${actionStr} user`, 'error');
+    }
+  }
+
+  async function handleResetPassword(user: UserOut) {
+    const detail = user.role === 'parent'
+      ? 'They will sign in with their child\'s date of birth again and be asked to choose a new password.'
+      : 'A temporary password will be generated and they must change it at next login.';
+    if (!confirm(`Reset the password for ${user.name}? ${detail}`)) return;
+
+    try {
+      const res = await api<{ message: string; temporary_password: string | null }>(
+        `/api/admin/users/${user.id}/reset-password`,
+        { method: 'POST', body: {} }
+      );
+      if (res.temporary_password) {
+        setResetResult({ name: user.name, password: res.temporary_password });
+      } else {
+        showToast(res.message, 'success');
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to reset password', 'error');
     }
   }
 
@@ -230,13 +252,23 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="py-3 px-4 text-right">
                       {user.role !== 'admin' && (
-                        <button 
-                          onClick={() => handleToggleStatus(user)}
-                          title={user.is_active ? "Deactivate User" : "Reactivate User"}
-                          className="p-1.5 text-text-muted hover:text-navy hover:bg-soft-blue rounded transition-colors"
-                        >
-                          {user.is_active ? <Trash2 size={16} className="hover:text-error" /> : <RefreshCw size={16} className="hover:text-success" />}
-                        </button>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => handleResetPassword(user)}
+                            title="Reset Password"
+                            aria-label={`Reset password for ${user.name}`}
+                            className="p-1.5 text-text-muted hover:text-school-blue hover:bg-soft-blue rounded transition-colors"
+                          >
+                            <KeyRound size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleToggleStatus(user)}
+                            title={user.is_active ? "Deactivate User" : "Reactivate User"}
+                            className="p-1.5 text-text-muted hover:text-navy hover:bg-soft-blue rounded transition-colors"
+                          >
+                            {user.is_active ? <Trash2 size={16} className="hover:text-error" /> : <RefreshCw size={16} className="hover:text-success" />}
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -352,6 +384,40 @@ export default function AdminUsersPage() {
             </div>
           </form>
         </div>
+      </Modal>
+
+      {/* Temporary password (shown once) */}
+      <Modal
+        isOpen={!!resetResult}
+        onClose={() => setResetResult(null)}
+        title="Temporary Password"
+      >
+        {resetResult && (
+          <div className="space-y-4 p-1">
+            <p className="text-sm text-text-secondary">
+              Share this temporary password with <strong className="text-navy">{resetResult.name}</strong> securely.
+              It is shown only once, and they will be required to change it at next login.
+            </p>
+            <div className="flex items-center gap-2">
+              <code id="temp-password" className="flex-1 bg-soft-blue px-3 py-2 rounded-lg font-mono text-navy select-all break-all">
+                {resetResult.password}
+              </code>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard?.writeText(resetResult.password);
+                  showToast('Copied to clipboard', 'success');
+                }}
+              >
+                Copy
+              </Button>
+            </div>
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setResetResult(null)}>Done</Button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

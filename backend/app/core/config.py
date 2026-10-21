@@ -40,8 +40,8 @@ class Settings(BaseSettings):
     # Set TRUST_PROXY_HEADERS=true only when running behind a reverse proxy
     # (e.g. Render) that appends the real client IP to X-Forwarded-For.
     TRUST_PROXY_HEADERS: bool = False
-    ENQUIRY_RATE_LIMIT: int = 5            # submissions allowed per window, per IP
-    ENQUIRY_RATE_WINDOW_SECONDS: int = 600  # 10 minutes
+    ENQUIRY_RATE_LIMIT: int = 10           # submissions allowed per window, per IP
+    ENQUIRY_RATE_WINDOW_SECONDS: int = 300  # 5 minutes
 
     model_config = {
         "env_file": ".env",

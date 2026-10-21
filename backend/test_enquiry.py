@@ -98,8 +98,9 @@ if token:
 if "--ratelimit" in sys.argv:
     statuses = []
     for _ in range(50):
-        # Invalid payload, so nothing is stored even if the limit is not hit.
-        s, _r = call("POST", "/api/enquiries", {"parent_name": "X", "email": "bad", "phone": "1"})
+        # Valid payload shape with honeypot tripped: passes schema validation,
+        # counts against the rate limit, and stores nothing in the DB.
+        s, _r = call("POST", "/api/enquiries", {"parent_name": "Bot", "email": "a@b.co", "phone": "9876543210", "website": "spam"})
         statuses.append(s)
         if s == 429:
             break

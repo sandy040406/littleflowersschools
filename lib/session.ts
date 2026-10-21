@@ -12,6 +12,8 @@ export interface Session {
   role: UserRole;
   userId: number;
   name: string;
+  /** True until the user replaces a temporary / first-login credential. */
+  mustChangePassword?: boolean;
 }
 
 const KEY = 'lfs_session';

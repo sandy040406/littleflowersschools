@@ -43,6 +43,7 @@ interface TokenResponse {
   role: Session['role'];
   user_id: number;
   name: string;
+  must_change_password?: boolean;
 }
 
 export function toSession(t: TokenResponse): Session {
@@ -52,6 +53,7 @@ export function toSession(t: TokenResponse): Session {
     role: t.role,
     userId: t.user_id,
     name: t.name,
+    mustChangePassword: !!t.must_change_password,
   };
 }
 

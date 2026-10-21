@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Hash, CalendarDays, Users, ArrowLeft } from 'lucide-react';
+import { Hash, CalendarDays, Lock, Users, ArrowLeft } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { loginParent } from '@/lib/auth';
@@ -11,7 +11,9 @@ import { useToast } from '@/components/ui/Toast';
 
 export default function ParentLoginPage() {
   const [admissionNumber, setAdmissionNumber] = useState('');
+  const [mode, setMode] = useState<'dob' | 'password'>('dob');
   const [dob, setDob] = useState(''); // YYYY-MM-DD from <input type="date">
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -24,7 +26,7 @@ export default function ParentLoginPage() {
     setError('');
     setLoading(true);
 
-    const result = await loginParent(admissionNumber, dob);
+    const result = await loginParent(admissionNumber, mode === 'dob' ? dob : password, mode);
 
     if (result.success) {
       showToast('Login successful', 'success');
@@ -48,7 +50,7 @@ export default function ParentLoginPage() {
             <Users size={32} />
           </div>
           <h1 className="text-2xl font-bold text-navy mb-2">Parent Portal Login</h1>
-          <p className="text-text-secondary">Sign in with your child&apos;s admission number and date of birth.</p>
+          <p className="text-text-secondary">Sign in with your child&apos;s admission number and date of birth (first visit), or your password.</p>
         </div>
 
         <Card padding="lg" className="shadow-xl border-border/50 backdrop-blur-sm bg-white/90">
@@ -76,25 +78,58 @@ export default function ParentLoginPage() {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="parent-dob" className="text-sm font-medium text-navy block">
-                Child&apos;s Date of Birth
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
-                  <CalendarDays size={18} />
+            {mode === 'dob' ? (
+              <div className="space-y-1.5">
+                <label htmlFor="parent-dob" className="text-sm font-medium text-navy block">
+                  Child&apos;s Date of Birth
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
+                    <CalendarDays size={18} />
+                  </div>
+                  <input
+                    id="parent-dob"
+                    type="date"
+                    required
+                    max={today}
+                    value={dob}
+                    onChange={(e) => setDob(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue outline-none transition-all"
+                  />
                 </div>
-                <input
-                  id="parent-dob"
-                  type="date"
-                  required
-                  max={today}
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue outline-none transition-all"
-                />
               </div>
-            </div>
+            ) : (
+              <div className="space-y-1.5">
+                <label htmlFor="parent-password" className="text-sm font-medium text-navy block">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-muted">
+                    <Lock size={18} />
+                  </div>
+                  <input
+                    id="parent-password"
+                    type="password"
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue outline-none transition-all"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              id="parent-login-mode-toggle"
+              type="button"
+              onClick={() => { setMode(mode === 'dob' ? 'password' : 'dob'); setError(''); }}
+              className="text-sm text-school-blue hover:underline"
+            >
+              {mode === 'dob'
+                ? 'Already set a password? Sign in with password'
+                : 'First time? Sign in with date of birth'}
+            </button>
 
             {error && (
               <p id="parent-login-error" role="alert" className="text-sm text-error bg-error/5 border border-error/20 rounded-lg px-3 py-2">

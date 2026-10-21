@@ -138,7 +138,7 @@ export default function ContactPage() {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form onSubmit={handleSubmit} className="space-y-5" suppressHydrationWarning>
                     {/* Honeypot field - invisible to humans, catches bots */}
                     <input
                       type="text"
@@ -147,6 +147,7 @@ export default function ContactPage() {
                       autoComplete="off"
                       className="hidden"
                       aria-hidden="true"
+                      suppressHydrationWarning
                     />
 
                     <div className="grid sm:grid-cols-2 gap-5">
@@ -156,7 +157,9 @@ export default function ContactPage() {
                           type="text" 
                           id="name" 
                           name="name"
+                          autoComplete="name"
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="John Doe"
                         />
@@ -167,7 +170,9 @@ export default function ContactPage() {
                           type="email" 
                           id="email" 
                           name="email"
+                          autoComplete="email"
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="john@example.com"
                         />
@@ -181,7 +186,9 @@ export default function ContactPage() {
                           type="tel" 
                           id="phone" 
                           name="phone"
+                          autoComplete="tel"
                           required
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all"
                           placeholder="+91 98765 43210"
                         />
@@ -191,6 +198,7 @@ export default function ContactPage() {
                         <select 
                           id="subject" 
                           name="subject"
+                          suppressHydrationWarning
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all bg-white"
                         >
                           <option value="General Inquiry">General Inquiry</option>
@@ -208,6 +216,7 @@ export default function ContactPage() {
                         name="message"
                         required
                         rows={5}
+                        suppressHydrationWarning
                         className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue transition-all resize-none"
                         placeholder="How can we help you?"
                       />

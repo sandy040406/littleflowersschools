@@ -28,15 +28,30 @@ import AlertBanner from '@/components/ui/AlertBanner';
 import {
   SCHOOL_INFO,
   MOCK_TEACHERS,
-  MOCK_EVENTS,
-  MOCK_MEDIA,
   PLACEHOLDER_IMAGES,
   STRENGTHS_DATA,
   ACTIVITIES_DATA,
 } from '@/lib/mock-data';
 import { formatDate } from '@/lib/utils';
+import { mediaUrl } from '@/lib/api';
 
-export default function HomePage() {
+async function getHomeEvents() {
+  try {
+    const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}/api/gallery/events`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as any[];
+  } catch {
+    return [];
+  }
+}
+
+export default async function HomePage() {
+  const events = await getHomeEvents();
+  const latestEvents = events.slice(0, 3);
+  // Extract media items or fallback to event covers
+  const previewMedia = events.flatMap(e => (e.media || []).filter((m: any) => m.media_type === 'image')).slice(0, 8);
   return (
     <>
       <AlertBanner />
@@ -239,37 +254,51 @@ export default function HomePage() {
         <div className="section-container">
           <SectionHeader
             title="Latest Events"
-            subtitle="Stay connected with what&rsquo;s happening at Little Flowers Schools."
+            subtitle="Stay connected with what’s happening at Little Flowers Schools."
           />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {MOCK_EVENTS.slice(0, 3).map((event) => (
-              <Card key={event.id} padding="none" hover>
-                <div className="relative h-48 overflow-hidden rounded-t-xl">
-                  <Image
-                    src={event.imageUrl}
-                    alt={event.title}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <Badge variant="blue">{event.category}</Badge>
+          {latestEvents.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {latestEvents.map((event: any) => (
+                <Card key={event.id} padding="none" hover className="flex flex-col h-full overflow-hidden">
+                  <div className="relative h-48 overflow-hidden rounded-t-xl bg-soft-blue flex items-center justify-center">
+                    {event.cover_url ? (
+                      <Image
+                        src={mediaUrl(event.cover_url)}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <Camera size={40} className="text-school-blue/30" />
+                    )}
+                    <div className="absolute top-3 left-3">
+                      <Badge variant="blue">{event.class_name || 'Whole School'}</Badge>
+                    </div>
                   </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-2 text-xs text-text-muted mb-2">
-                    <Calendar size={13} />
-                    <span>{formatDate(event.date)}</span>
+                  <div className="p-5 flex flex-col flex-1">
+                    <div className="flex items-center gap-2 text-xs text-text-muted mb-2">
+                      <Calendar size={13} />
+                      <span>{formatDate(event.event_date)}</span>
+                    </div>
+                    <h3 className="font-semibold text-navy mb-2 line-clamp-1">{event.title}</h3>
+                    {event.description && (
+                      <p className="text-text-secondary text-sm leading-relaxed mb-3 line-clamp-2">{event.description}</p>
+                    )}
+                    <div className="mt-auto pt-2">
+                      <Link href="/gallery" className="text-school-blue text-sm font-medium hover:underline inline-flex items-center gap-1">
+                        View Gallery <ChevronRight size={14} />
+                      </Link>
+                    </div>
                   </div>
-                  <h3 className="font-semibold text-navy mb-2">{event.title}</h3>
-                  <p className="text-text-secondary text-sm leading-relaxed mb-3">{event.description.slice(0, 100)}…</p>
-                  <Link href="/gallery" className="text-school-blue text-sm font-medium hover:underline inline-flex items-center gap-1">
-                    View Details <ChevronRight size={14} />
-                  </Link>
-                </div>
-              </Card>
-            ))}
-          </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-text-muted">
+              <p>No recent events announced yet. Check back soon!</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -281,24 +310,27 @@ export default function HomePage() {
             subtitle="Glimpses of life at Little Flowers Schools — moments of learning, celebration, and growth."
           />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 lg:gap-4">
-            {MOCK_MEDIA.filter((m) => m.fileType === 'image').slice(0, 8).map((media) => (
-              <div key={media.id} className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer">
+            {events.filter((e: any) => e.cover_url).slice(0, 8).map((event: any) => (
+              <Link key={event.id} href="/gallery" className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer block bg-white">
                 <Image
-                  src={media.thumbnailUrl}
-                  alt={media.fileName}
+                  src={mediaUrl(event.cover_url)}
+                  alt={event.title}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  unoptimized
                 />
-                <div className="absolute inset-0 bg-navy/0 group-hover:bg-navy/30 transition-colors duration-200 flex items-center justify-center">
-                  <Camera size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                <div className="absolute inset-0 bg-navy/0 group-hover:bg-navy/40 transition-colors duration-200 flex flex-col items-center justify-center p-3 text-center">
+                  <Camera size={24} className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200 mb-1" />
+                  <span className="text-white text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 truncate max-w-full">
+                    {event.title}
+                  </span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           <div className="text-center mt-8">
             <Button href="/gallery">
-              View Gallery <ArrowRight size={16} />
+              View All Photos <ArrowRight size={16} />
             </Button>
           </div>
         </div>
