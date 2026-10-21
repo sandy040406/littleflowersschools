@@ -97,9 +97,14 @@ export default function ParentDashboard() {
 
       {/* Children Section */}
       <div>
-        <h2 className="text-lg font-bold text-navy mb-4 flex items-center gap-2">
-          <GraduationCap size={20} className="text-school-blue" /> My Children
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+            <GraduationCap size={20} className="text-school-blue" /> My Children
+          </h2>
+          <Link href="/parent/children" className="text-sm font-medium text-school-blue hover:underline flex items-center gap-1">
+            View Profiles <ChevronRight size={16} />
+          </Link>
+        </div>
         {children.length === 0 ? (
           <Card className="p-6 text-center text-text-secondary">
             <p>No student records are currently linked to this parent account.</p>
@@ -107,34 +112,36 @@ export default function ParentDashboard() {
         ) : (
           <div className="grid md:grid-cols-2 gap-4 lg:gap-6">
             {children.map((child) => (
-              <Card key={child.id} hover className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full bg-soft-blue flex-shrink-0 flex items-center justify-center text-xl font-bold text-school-blue">
-                  {child.name.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-navy leading-tight">{child.name}</h3>
-                  <p className="text-sm font-medium text-school-blue mb-3">
-                    {child.class_name} – Section {child.section}
-                  </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
-                    <div className="flex items-center gap-1">
-                      <span className="font-semibold text-text-primary">Adm No:</span> {child.admission_number}
-                    </div>
-                    {child.roll_number && (
+              <Link key={child.id} href="/parent/children" className="block focus:outline-none">
+                <Card hover className="flex items-start gap-4 h-full cursor-pointer hover:border-school-blue/40 transition-colors">
+                  <div className="w-16 h-16 rounded-full bg-soft-blue flex-shrink-0 flex items-center justify-center text-xl font-bold text-school-blue">
+                    {child.name.charAt(0)}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-navy leading-tight">{child.name}</h3>
+                    <p className="text-sm font-medium text-school-blue mb-3">
+                      {child.class_name} – Section {child.section}
+                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-text-secondary">
                       <div className="flex items-center gap-1">
-                        <span className="font-semibold text-text-primary">Roll No:</span> {child.roll_number}
+                        <span className="font-semibold text-text-primary">Adm No:</span> {child.admission_number}
                       </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <span className="font-semibold text-text-primary">Status:</span> 
-                      <span className={child.is_active ? "text-success flex items-center gap-1" : "text-danger flex items-center gap-1"}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${child.is_active ? 'bg-success' : 'bg-danger'}`}></span>
-                        {child.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      {child.roll_number && (
+                        <div className="flex items-center gap-1">
+                          <span className="font-semibold text-text-primary">Roll No:</span> {child.roll_number}
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <span className="font-semibold text-text-primary">Status:</span> 
+                        <span className={child.is_active ? "text-success flex items-center gap-1" : "text-danger flex items-center gap-1"}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${child.is_active ? 'bg-success' : 'bg-danger'}`}></span>
+                          {child.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </Link>
             ))}
           </div>
         )}

@@ -153,20 +153,27 @@ def create_student(
             detail=f"A student with admission number {body.admission_number} already exists.",
         )
 
-    # Check if parent with this admission_number already exists
-    existing_parent = db.query(User).filter(
-        User.admission_number == body.admission_number
+    clean_email = body.parent_email.strip() if body.parent_email and body.parent_email.strip() else None
+    clean_phone = body.parent_phone.strip() if body.parent_phone and body.parent_phone.strip() else None
+
+    # Check if parent exists by admission_number, or by email, or by phone
+    parent_user = db.query(User).filter(
+        User.admission_number == body.admission_number,
+        User.role == UserRole.parent
     ).first()
 
-    if existing_parent:
-        parent_user = existing_parent
-    else:
+    if not parent_user and clean_email:
+        parent_user = db.query(User).filter(User.email == clean_email, User.role == UserRole.parent).first()
+    if not parent_user and clean_phone:
+        parent_user = db.query(User).filter(User.phone == clean_phone, User.role == UserRole.parent).first()
+
+    if not parent_user:
         # Create parent user account
         parent_user = User(
             role=UserRole.parent,
-            name=body.parent_name,
-            phone=body.parent_phone,
-            email=body.parent_email,
+            name=body.parent_name.strip(),
+            phone=clean_phone,
+            email=clean_email,
             admission_number=body.admission_number,
             date_of_birth=body.date_of_birth,
         )

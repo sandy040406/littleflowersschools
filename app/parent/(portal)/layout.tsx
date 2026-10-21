@@ -3,8 +3,8 @@ import PortalLayout from '@/components/portal/PortalLayout';
 
 const sidebarItems = [
   { label: 'Dashboard', href: '/parent/dashboard', icon: <LayoutDashboard size={20} /> },
+  { label: 'Children', href: '/parent/children', icon: <Users size={20} /> },
   { label: 'My Gallery', href: '/parent/gallery', icon: <ImageIcon size={20} /> },
-  { label: 'Children', href: '#', icon: <Users size={20} /> },
   { label: 'Contact School', href: '/contact', icon: <Phone size={20} /> },
 ];
 

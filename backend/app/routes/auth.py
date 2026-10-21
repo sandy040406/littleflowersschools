@@ -85,11 +85,24 @@ def login_parent(body: ParentLogin, db: Session = Depends(get_db)):
     Accepts admission_number (username) + credential:
       - first login (no password set yet): date_of_birth
       - afterwards: the password the parent chose
+    Supports parents with multiple children: parent can log in using
+    any of their children's admission numbers.
     """
+    from app.models.student import Student
+
     user = db.query(User).filter(
         User.admission_number == body.admission_number,
         User.role == UserRole.parent,
     ).first()
+
+    matched_student = None
+    if not user:
+        student = db.query(Student).filter(Student.admission_number == body.admission_number).first()
+        if student and student.parent_id:
+            user = db.query(User).filter(User.id == student.parent_id, User.role == UserRole.parent).first()
+            matched_student = student
+    else:
+        matched_student = db.query(Student).filter(Student.admission_number == body.admission_number).first()
 
     invalid = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -104,8 +117,9 @@ def login_parent(body: ParentLogin, db: Session = Depends(get_db)):
         if not body.password or not verify_password(body.password, user.hashed_password):
             raise invalid
     else:
-        # Compare DOB (stored as YYYY-MM-DD string)
-        if not body.date_of_birth or user.date_of_birth != body.date_of_birth:
+        # Compare DOB: first check matched student's DOB, fallback to user's DOB
+        dob_to_match = matched_student.date_of_birth if matched_student else user.date_of_birth
+        if not body.date_of_birth or dob_to_match != body.date_of_birth:
             raise invalid
 
     if not user.is_active:
@@ -158,12 +172,20 @@ def change_password(
     """
     if current_user.hashed_password:
         valid = verify_password(body.current_password, current_user.hashed_password)
+        forbidden_passwords = [current_user.date_of_birth] if current_user.date_of_birth else []
     else:
+        from app.models.student import Student
+        valid_dobs = [current_user.date_of_birth] if current_user.date_of_birth else []
+        students = db.query(Student).filter(Student.parent_id == current_user.id).all()
+        for s in students:
+            if s.date_of_birth:
+                valid_dobs.append(s.date_of_birth)
         valid = (
             current_user.role == UserRole.parent
-            and bool(current_user.date_of_birth)
-            and body.current_password == current_user.date_of_birth
+            and (body.current_password in valid_dobs or (not valid_dobs and not body.current_password))
         )
+        forbidden_passwords = valid_dobs
+
     if not valid:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -175,7 +197,7 @@ def change_password(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="New password must be different from the current one",
         )
-    if current_user.role == UserRole.parent and body.new_password == current_user.date_of_birth:
+    if current_user.role == UserRole.parent and body.new_password in forbidden_passwords:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Password cannot be your child's date of birth",
@@ -198,13 +220,14 @@ def get_my_children(
         return []
     
     from app.models.student import Student
-    students = db.query(Student).filter(Student.parent_id == current_user.id).all()
+    students = db.query(Student).filter(Student.parent_id == current_user.id).order_by(Student.id.asc()).all()
     
     return [
         {
             "id": s.id,
             "name": s.name,
             "admission_number": s.admission_number,
+            "date_of_birth": s.date_of_birth,
             "class_name": s.class_name,
             "section": s.section,
             "roll_number": s.roll_number,
