@@ -20,7 +20,7 @@ from app.core.security import hash_password
 from app.models.user import User, UserRole
 from app.models.student import Student
 from app.models.gallery import Media
-from app.schemas.auth import CreateTeacher, CreateStudent, UserOut, ResetPasswordRequest
+from app.schemas.auth import CreateTeacher, CreateStudent, UserOut, ResetPasswordRequest, TeacherProfileUpdate, PublicFacultyOut
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -56,6 +56,46 @@ def list_users(
     if role:
         query = query.filter(User.role == role)
     return query.order_by(User.created_at.desc()).all()
+
+
+@router.put("/teachers/{teacher_id}", response_model=UserOut)
+def update_teacher(
+    teacher_id: int,
+    body: TeacherProfileUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_only),
+):
+    """Admin updates teacher profile information."""
+    teacher = db.query(User).filter(User.id == teacher_id, User.role == UserRole.teacher).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    if body.email and body.email != teacher.email:
+        existing = db.query(User).filter(User.email == body.email, User.id != teacher_id).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already in use by another user")
+        teacher.email = body.email
+
+    if body.name is not None:
+        teacher.name = body.name.strip()
+    if body.phone is not None:
+        teacher.phone = body.phone.strip() or None
+    if body.designation is not None:
+        teacher.designation = body.designation.strip() or None
+    if body.subject is not None:
+        teacher.subject = body.subject.strip() or None
+    if body.department is not None:
+        teacher.department = body.department.strip() or None
+    if body.experience is not None:
+        teacher.experience = body.experience.strip() or None
+    if body.bio is not None:
+        teacher.bio = body.bio.strip() or None
+    if body.photo_url is not None:
+        teacher.photo_url = body.photo_url.strip() or None
+
+    db.commit()
+    db.refresh(teacher)
+    return teacher
 
 
 @router.post("/teachers", response_model=UserOut, status_code=status.HTTP_201_CREATED)

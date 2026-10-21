@@ -27,7 +27,6 @@ import HeroSlider from '@/components/ui/HeroSlider';
 import AlertBanner from '@/components/ui/AlertBanner';
 import {
   SCHOOL_INFO,
-  MOCK_TEACHERS,
   PLACEHOLDER_IMAGES,
   STRENGTHS_DATA,
   ACTIVITIES_DATA,
@@ -35,23 +34,25 @@ import {
 import { formatDate } from '@/lib/utils';
 import { mediaUrl } from '@/lib/api';
 
-async function getHomeEvents() {
+async function getHomeData() {
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
   try {
-    const res = await fetch(`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')}/api/gallery/events`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return [];
-    return (await res.json()) as any[];
+    const [eventsRes, facultyRes] = await Promise.all([
+      fetch(`${base}/api/gallery/events`, { next: { revalidate: 60 } }),
+      fetch(`${base}/api/content/faculty`, { next: { revalidate: 60 } }),
+    ]);
+    const events = eventsRes.ok ? await eventsRes.json() : [];
+    const faculty = facultyRes.ok ? await facultyRes.json() : [];
+    return { events, faculty };
   } catch {
-    return [];
+    return { events: [], faculty: [] };
   }
 }
 
 export default async function HomePage() {
-  const events = await getHomeEvents();
+  const { events, faculty } = await getHomeData();
   const latestEvents = events.slice(0, 3);
-  // Extract media items or fallback to event covers
-  const previewMedia = events.flatMap(e => (e.media || []).filter((m: any) => m.media_type === 'image')).slice(0, 8);
+  const featuredFaculty = faculty.slice(0, 4);
   return (
     <>
       <AlertBanner />
@@ -343,26 +344,38 @@ export default async function HomePage() {
             title="Our Faculty"
             subtitle="Dedicated educators who bring passion, expertise, and care to every classroom."
           />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {MOCK_TEACHERS.slice(0, 4).map((teacher) => (
-              <Card key={teacher.id} padding="none" hover>
-                <div className="relative h-52 overflow-hidden rounded-t-xl bg-soft-blue">
-                  <Image
-                    src={teacher.photoUrl}
-                    alt={teacher.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-                </div>
-                <div className="p-4 text-center">
-                  <h3 className="font-semibold text-navy">{teacher.name}</h3>
-                  <p className="text-text-secondary text-sm">{teacher.designation}</p>
-                  <p className="text-school-blue text-xs font-medium mt-1">{teacher.subject}</p>
-                </div>
-              </Card>
-            ))}
-          </div>
+          {featuredFaculty.length > 0 ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {featuredFaculty.map((teacher: any) => (
+                <Card key={teacher.id} padding="none" hover className="flex flex-col h-full overflow-hidden">
+                  <div className="relative h-52 overflow-hidden rounded-t-xl bg-soft-blue flex items-center justify-center">
+                    {teacher.photo_url ? (
+                      <Image
+                        src={mediaUrl(teacher.photo_url)}
+                        alt={teacher.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <Users size={44} className="text-school-blue/30" />
+                    )}
+                  </div>
+                  <div className="p-4 text-center flex flex-col flex-1">
+                    <h3 className="font-semibold text-navy line-clamp-1">{teacher.name}</h3>
+                    <p className="text-text-secondary text-sm mt-0.5">{teacher.designation || 'Educator'}</p>
+                    {teacher.subject && (
+                      <p className="text-school-blue text-xs font-medium mt-1">{teacher.subject}</p>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-text-muted">
+              <p>Faculty details are being updated.</p>
+            </div>
+          )}
           <div className="text-center mt-8">
             <Button href="/faculty" variant="outline">
               Meet Our Faculty <ArrowRight size={16} />

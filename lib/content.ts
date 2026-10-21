@@ -35,3 +35,18 @@ export const getActiveSlides = (signal?: AbortSignal) =>
 
 export const getActiveAnnouncements = (signal?: AbortSignal) =>
   api<Announcement[]>('/api/content/announcements/active', { auth: false, signal });
+
+export interface FacultyMember {
+  id: number;
+  name: string;
+  email: string | null;
+  designation: string | null;
+  subject: string | null;
+  department: string | null;
+  experience: string | null;
+  bio: string | null;
+  photo_url: string | null;
+}
+
+export const getPublicFaculty = (signal?: AbortSignal) =>
+  api<FacultyMember[]>('/api/content/faculty', { auth: false, signal });

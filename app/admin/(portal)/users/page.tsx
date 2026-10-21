@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, UserCircle, Mail, Phone, MoreVertical, X, Shield, BookOpen, GraduationCap, RefreshCw, Trash2, KeyRound } from 'lucide-react';
+import { Search, Plus, UserCircle, Mail, Phone, MoreVertical, X, Shield, BookOpen, GraduationCap, RefreshCw, Trash2, KeyRound, Edit } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
@@ -20,6 +20,11 @@ interface UserOut {
   is_active: boolean;
   admission_number: string | null;
   designation: string | null;
+  subject: string | null;
+  department: string | null;
+  experience: string | null;
+  bio: string | null;
+  photo_url: string | null;
 }
 
 export default function AdminUsersPage() {
@@ -34,7 +39,22 @@ export default function AdminUsersPage() {
   const { showToast } = useToast();
   const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null);
 
-  const [teacherForm, setTeacherForm] = useState({ name: '', email: '', password: '', phone: '', designation: '' });
+  // Edit Teacher Profile state
+  const [editingTeacher, setEditingTeacher] = useState<UserOut | null>(null);
+  const [teacherEditForm, setTeacherEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    designation: '',
+    subject: '',
+    department: '',
+    experience: '',
+    bio: '',
+    photo_url: '',
+  });
+  const [updatingTeacher, setUpdatingTeacher] = useState(false);
+
+  const [teacherForm, setTeacherForm] = useState({ name: '', email: '', password: '', phone: '', designation: '', subject: '', department: '', experience: '', bio: '', photo_url: '' });
   const [studentForm, setStudentForm] = useState({ name: '', admission_number: '', date_of_birth: '', class_name: '', parent_name: '', parent_phone: '', parent_email: '' });
 
   useEffect(() => {
@@ -85,6 +105,40 @@ export default function AdminUsersPage() {
     }
   }
 
+  function openEditTeacher(user: UserOut) {
+    setEditingTeacher(user);
+    setTeacherEditForm({
+      name: user.name || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      designation: user.designation || '',
+      subject: user.subject || '',
+      department: user.department || '',
+      experience: user.experience || '',
+      bio: user.bio || '',
+      photo_url: user.photo_url || '',
+    });
+  }
+
+  async function handleUpdateTeacher(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingTeacher) return;
+    try {
+      setUpdatingTeacher(true);
+      await api(`/api/admin/teachers/${editingTeacher.id}`, {
+        method: 'PUT',
+        body: teacherEditForm,
+      });
+      showToast('Teacher profile updated successfully', 'success');
+      setEditingTeacher(null);
+      fetchUsers();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update teacher profile', 'error');
+    } finally {
+      setUpdatingTeacher(false);
+    }
+  }
+
   async function handleResetPassword(user: UserOut) {
     const detail = user.role === 'parent'
       ? 'They will sign in with their child\'s date of birth again and be asked to choose a new password.'
@@ -120,7 +174,7 @@ export default function AdminUsersPage() {
       }
       
       setShowAddModal(false);
-      setTeacherForm({ name: '', email: '', password: '', phone: '', designation: '' });
+      setTeacherForm({ name: '', email: '', password: '', phone: '', designation: '', subject: '', department: '', experience: '', bio: '', photo_url: '' });
       setStudentForm({ name: '', admission_number: '', date_of_birth: '', class_name: '', parent_name: '', parent_phone: '', parent_email: '' });
       fetchUsers();
     } catch (err: any) {
@@ -253,6 +307,16 @@ export default function AdminUsersPage() {
                     <td className="py-3 px-4 text-right">
                       {user.role !== 'admin' && (
                         <div className="inline-flex items-center gap-1">
+                          {user.role === 'teacher' && (
+                            <button
+                              onClick={() => openEditTeacher(user)}
+                              title="Edit Teacher Profile"
+                              aria-label={`Edit profile for ${user.name}`}
+                              className="p-1.5 text-text-muted hover:text-school-blue hover:bg-soft-blue rounded transition-colors"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          )}
                           <button
                             onClick={() => handleResetPassword(user)}
                             title="Reset Password"
@@ -384,6 +448,115 @@ export default function AdminUsersPage() {
             </div>
           </form>
         </div>
+      </Modal>
+
+      {/* Edit Teacher Modal */}
+      <Modal
+        isOpen={!!editingTeacher}
+        onClose={() => setEditingTeacher(null)}
+        title={`Edit Teacher Profile: ${editingTeacher?.name || ''}`}
+        size="lg"
+      >
+        {editingTeacher && (
+          <form onSubmit={handleUpdateTeacher} className="space-y-4 p-1">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={teacherEditForm.name}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, name: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  value={teacherEditForm.email}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, email: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Phone Number</label>
+                <input
+                  type="tel"
+                  value={teacherEditForm.phone}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, phone: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Designation</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Senior Teacher, Head of Dept"
+                  value={teacherEditForm.designation}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, designation: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Subject</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Mathematics, Science"
+                  value={teacherEditForm.subject}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, subject: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Department</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Science, Mathematics, Languages"
+                  value={teacherEditForm.department}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, department: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Experience</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 8+ years"
+                  value={teacherEditForm.experience}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, experience: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-navy mb-1">Photo URL</label>
+                <input
+                  type="text"
+                  placeholder="https://... or /uploads/..."
+                  value={teacherEditForm.photo_url}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, photo_url: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-semibold text-navy mb-1">Teacher Bio / Philosophy</label>
+                <textarea
+                  rows={3}
+                  value={teacherEditForm.bio}
+                  onChange={e => setTeacherEditForm({...teacherEditForm, bio: e.target.value})}
+                  className="w-full p-2 text-sm rounded border border-border resize-none"
+                  placeholder="Brief note about teaching style, qualifications, and passions..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-border gap-3">
+              <Button type="button" variant="outline" onClick={() => setEditingTeacher(null)}>Cancel</Button>
+              <Button type="submit" loading={updatingTeacher}>Save Teacher Profile</Button>
+            </div>
+          </form>
+        )}
       </Modal>
 
       {/* Temporary password (shown once) */}

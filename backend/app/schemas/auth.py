@@ -74,7 +74,38 @@ class UserOut(BaseModel):
     designation: Optional[str] = None
     subject: Optional[str] = None
     department: Optional[str] = None
+    experience: Optional[str] = None
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
     needs_password_change: bool = False
+
+    model_config = {"from_attributes": True}
+
+
+class TeacherProfileUpdate(BaseModel):
+    """Teacher or Admin updates teacher details."""
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    designation: Optional[str] = None
+    subject: Optional[str] = None
+    department: Optional[str] = None
+    experience: Optional[str] = None
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
+
+
+class PublicFacultyOut(BaseModel):
+    """Public-facing educator profile."""
+    id: int
+    name: str
+    email: Optional[str] = None
+    designation: Optional[str] = None
+    subject: Optional[str] = None
+    department: Optional[str] = None
+    experience: Optional[str] = None
+    bio: Optional[str] = None
+    photo_url: Optional[str] = None
 
     model_config = {"from_attributes": True}
 

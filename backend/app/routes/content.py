@@ -28,6 +28,7 @@ from app.core.database import get_db
 from app.core.deps import require_role
 from app.models.user import User, UserRole
 from app.models.content import Announcement, HeroSlide
+from app.schemas.auth import PublicFacultyOut
 from app.schemas.content import (
     AnnouncementCreate, AnnouncementUpdate, AnnouncementOut,
     HeroSlideCreate, HeroSlideUpdate, HeroSlideOut, ReorderRequest,
@@ -219,3 +220,15 @@ def delete_slide(
     db.delete(slide)
     db.commit()
     return {"message": "Slide deleted."}
+
+
+# ── Public Faculty ──────────────────────────────────────────
+
+@router.get("/faculty", response_model=list[PublicFacultyOut])
+def get_public_faculty(db: Session = Depends(get_db)):
+    """Public endpoint to list active teachers for the website faculty page."""
+    teachers = db.query(User).filter(
+        User.role == UserRole.teacher,
+        User.is_active == True,
+    ).order_by(User.id.asc()).all()
+    return teachers
