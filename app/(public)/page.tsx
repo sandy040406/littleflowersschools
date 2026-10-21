@@ -31,8 +31,7 @@ import {
   STRENGTHS_DATA,
   ACTIVITIES_DATA,
 } from '@/lib/mock-data';
-import { formatDate } from '@/lib/utils';
-import { mediaUrl } from '@/lib/api';
+import { formatDate, mediaUrl } from '@/lib/utils';
 
 async function getHomeData() {
   const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');

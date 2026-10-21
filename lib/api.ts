@@ -5,8 +5,9 @@
 // ============================================================
 
 import { getSession, setSession, clearSession, type Session } from '@/lib/session';
+import { API_URL, mediaUrl } from '@/lib/utils';
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+export { API_URL, mediaUrl };
 
 export class ApiError extends Error {
   status: number;
@@ -14,12 +15,6 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
   }
-}
-
-/** Turn a backend-relative path like "/uploads/x.jpg" into a full URL. */
-export function mediaUrl(path?: string | null): string {
-  if (!path) return '';
-  return path.startsWith('http') ? path : `${API_URL}${path}`;
 }
 
 function extractMessage(body: unknown, status: number): string {

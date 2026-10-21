@@ -50,6 +50,14 @@ export function simulateDelay(ms: number = 1500): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+
+/** Turn a backend-relative path like "/uploads/x.jpg" into a full URL. */
+export function mediaUrl(path?: string | null): string {
+  if (!path) return '';
+  return path.startsWith('http') ? path : `${API_URL}${path}`;
+}
+
 /**
  * Truncate text to specified length
  */

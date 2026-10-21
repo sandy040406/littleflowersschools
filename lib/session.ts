@@ -1,3 +1,5 @@
+'use client';
+
 // ============================================================
 // Session store — keeps the logged-in user + JWT tokens in
 // localStorage and lets React components subscribe to changes.
