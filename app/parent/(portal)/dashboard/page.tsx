@@ -12,12 +12,15 @@ import {
   MapPin,
   FileText,
   Phone,
-  Loader2
+  Loader2,
+  Bell,
+  Pin
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { useSession } from '@/lib/session';
 import { api, mediaUrl } from '@/lib/api';
+import { getParentNotices, Notice } from '@/lib/notices';
 import { getGreeting, formatDate } from '@/lib/utils';
 
 interface ChildData {
@@ -49,19 +52,22 @@ export default function ParentDashboard() {
   const session = useSession();
   const [children, setChildren] = useState<ChildData[]>([]);
   const [events, setEvents] = useState<EventData[]>([]);
+  const [notices, setNotices] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     async function loadData() {
       try {
-        const [kids, evts] = await Promise.all([
+        const [kids, evts, ntc] = await Promise.all([
           api<ChildData[]>('/api/auth/me/children').catch(() => []),
           api<EventData[]>('/api/gallery/events').catch(() => []),
+          getParentNotices().catch(() => []),
         ]);
         if (mounted) {
           setChildren(kids || []);
           setEvents(evts || []);
+          setNotices(ntc || []);
         }
       } catch (err) {
         console.error('Failed to load parent dashboard data', err);
@@ -148,9 +154,75 @@ export default function ParentDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
-        {/* Main Content (Events & Updates) */}
+        {/* Main Content (Notices & Events) */}
         <div className="lg:col-span-2 space-y-6 lg:space-y-8">
           
+          {/* Latest Circulars & Notices */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-navy flex items-center gap-2">
+                <Bell size={20} className="text-school-blue" /> Latest Circulars & Notices
+              </h2>
+              <Link href="/parent/notices" className="text-sm font-medium text-school-blue hover:underline flex items-center gap-1">
+                View All <ChevronRight size={16} />
+              </Link>
+            </div>
+
+            {notices.length === 0 ? (
+              <Card className="p-6 text-center text-text-secondary text-sm">
+                No new circulars or notices for your family.
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {notices.slice(0, 3).map((notice) => (
+                  <Link key={notice.id} href="/parent/notices" className="block focus:outline-none">
+                    <Card
+                      hover
+                      className={`p-4 transition-all border-l-4 ${
+                        notice.is_pinned
+                          ? 'border-l-gold bg-amber-50/10'
+                          : notice.target_class
+                          ? 'border-l-purple-600 bg-purple-50/10'
+                          : 'border-l-school-blue'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                        <div className="flex items-center gap-2">
+                          {notice.is_pinned && (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-gold/15 text-navy border border-gold/30">
+                              <Pin size={10} className="rotate-45" /> Pinned
+                            </span>
+                          )}
+                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-soft-blue text-school-blue capitalize">
+                            {notice.category}
+                          </span>
+                          {notice.target_class ? (
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                              For: {notice.target_class}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-text-muted px-2 py-0.5 rounded bg-gray-100">
+                              Whole School
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-text-muted flex items-center gap-1">
+                          <Clock size={12} /> {formatDate(notice.publish_date)}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-bold text-navy leading-snug hover:text-school-blue transition-colors">
+                        {notice.title}
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-1 line-clamp-2">
+                        {notice.content}
+                      </p>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Recent Events */}
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -260,6 +332,12 @@ export default function ParentDashboard() {
               <FileText size={20} className="text-school-blue" /> Quick Links
             </h2>
             <div className="space-y-2">
+              <Link href="/parent/notices" className="flex items-center justify-between p-3 rounded-lg hover:bg-soft-blue transition-colors text-sm font-medium text-navy">
+                <div className="flex items-center gap-2">
+                  <Bell size={16} className="text-text-muted" /> Circulars & Notices
+                </div>
+                <ChevronRight size={16} className="text-text-muted" />
+              </Link>
               <Link href="/parent/gallery" className="flex items-center justify-between p-3 rounded-lg hover:bg-soft-blue transition-colors text-sm font-medium text-navy">
                 <div className="flex items-center gap-2">
                   <ImageIcon size={16} className="text-text-muted" /> View Gallery

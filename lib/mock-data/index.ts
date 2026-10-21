@@ -423,6 +423,7 @@ export const NAV_ITEMS = [
   { label: 'Academics', href: '/academics' },
   { label: 'Faculty', href: '/faculty' },
   { label: 'Gallery', href: '/gallery' },
+  { label: 'Circulars', href: '/notices' },
   { label: 'Activities', href: '/activities' },
   { label: 'Our Strengths', href: '/strengths' },
   { label: 'Contact', href: '/contact' },

@@ -19,9 +19,10 @@ from app.models.student import Student
 from app.models.content import Announcement, HeroSlide
 from app.models.gallery import Event, Media  # noqa: F401 (registers tables)
 from app.models.enquiry import Enquiry  # noqa: F401 (registers table)
+from app.models.notice import Notice  # noqa: F401 (registers table)
 
 # Import all route modules
-from app.routes import auth, admin, content, upload, gallery, enquiry
+from app.routes import auth, admin, content, upload, gallery, enquiry, notice
 
 settings = get_settings()
 
@@ -59,6 +60,38 @@ DEFAULT_ANNOUNCEMENTS = [
 ]
 
 
+DEFAULT_NOTICES = [
+    (
+        "Annual Sports Day 2026 — Schedule & Guidelines",
+        "We are thrilled to announce the upcoming Annual Sports Meet scheduled for next month. All students must assemble in proper sports uniform by 8:30 AM. Parents are cordially invited to cheer the participants.",
+        "circular",
+        None,
+        True,
+    ),
+    (
+        "Mid-Term Examination Schedule Announced",
+        "The datesheet and syllabus breakdown for mid-term assessments have been published. Revision worksheets will be distributed by class teachers this week.",
+        "exam",
+        None,
+        True,
+    ),
+    (
+        "Class I Parent-Teacher Meeting (PTM)",
+        "Individual 10-minute conference slots with Class I subject teachers will be conducted this Saturday from 9:00 AM to 1:00 PM. Kindly confirm attendance.",
+        "academic",
+        "Class I",
+        False,
+    ),
+    (
+        "Winter Vacation & School Reopening Schedule",
+        "School will remain closed for winter break from December 24 to January 4. Regular classes will resume on Monday, January 5.",
+        "holiday",
+        None,
+        False,
+    ),
+]
+
+
 def seed_content(db):
     """Seed starter homepage content the first time only (admin can edit/delete)."""
     if db.query(HeroSlide).count() == 0:
@@ -72,6 +105,17 @@ def seed_content(db):
         for text, priority, link in DEFAULT_ANNOUNCEMENTS:
             db.add(Announcement(text=text, priority=priority, link=link))
         print("[OK] Seeded default announcements.")
+    if db.query(Notice).count() == 0:
+        for title, content, category, target_class, is_pinned in DEFAULT_NOTICES:
+            db.add(Notice(
+                title=title,
+                content=content,
+                category=category,
+                target_class=target_class,
+                is_pinned=is_pinned,
+                is_active=True,
+            ))
+        print("[OK] Seeded default notices & circulars.")
     db.commit()
 
 
@@ -138,6 +182,7 @@ app.include_router(upload.router)
 app.include_router(gallery.router)
 app.include_router(enquiry.router)
 app.include_router(enquiry.contact_router)
+app.include_router(notice.router)
 
 
 # ── Health Check ────────────────────────────────────────────

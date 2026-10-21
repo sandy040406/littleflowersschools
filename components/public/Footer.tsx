@@ -4,6 +4,7 @@ import { Phone, Mail, MapPin, Globe, Camera, Video, MessageCircle } from 'lucide
 import { NAV_ITEMS } from '@/lib/mock-data';
 
 const quickLinks = [
+  { label: 'Circulars & Notices', href: '/notices' },
   { label: 'Activities', href: '/activities' },
   { label: 'Our Strengths', href: '/strengths' },
   { label: 'Contact', href: '/contact' },
