@@ -59,8 +59,8 @@
 | Step | Milestone | Objectives | Current Status |
 |---|---|---|---|
 | **L1** | **Security Hardening** | Refuse default passwords & short secret keys in production, login rate-limiting (30/5m), CORS restriction to production domain, security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) | **COMPLETED** (`1b73bce`) |
-| **L2** | **Cloudflare R2 Storage** | Seamless dual-mode storage (`STORAGE_BACKEND=local\|r2`), S3-compatible `boto3` client, transparent public URLs, image host whitelist in `next.config.ts`, automated tests | **IN PROGRESS (Next Step)** |
-| **L3** | **PostgreSQL Compatibility** | Add `psycopg[binary]`, ensure dialect-agnostic database connections for Neon PostgreSQL, verify migrations and connection pooling | **QUEUED** |
+| **L2** | **Cloudflare R2 Storage** | Seamless dual-mode storage (`STORAGE_BACKEND=local\|r2`), S3-compatible `boto3` client, transparent public URLs, image host whitelist in `next.config.ts`, automated tests | **COMPLETED** (`c073d70`) |
+| **L3** | **PostgreSQL Compatibility** | Add `psycopg[binary]`, ensure dialect-agnostic database connections for Neon PostgreSQL, verify migrations and connection pooling | **NEXT (Ready to Execute)** |
 | **L4** | **Production Seeding Rules** | Skip mock Unsplash slides in production; seed only clean Super Admin from environment variables | **QUEUED** |
 | **L5** | **Deploy Artifacts & Clean Up** | Production `Dockerfile`, `render.yaml`, `.env.production.example`, remove stray raw assets | **QUEUED** |
 
