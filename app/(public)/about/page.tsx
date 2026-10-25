@@ -19,6 +19,43 @@ async function getAboutSettings() {
   return null;
 }
 
+interface ParsedPoint {
+  num: number;
+  title?: string;
+  text: string;
+}
+
+function parseStatementPoints(rawText: string): ParsedPoint[] {
+  if (!rawText) return [];
+  const text = rawText.trim();
+  const numberSplit = text
+    .split(/(?:^|\s+)(?=\d+[\.\)])/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  let rawList: string[] = [];
+  if (numberSplit.length > 1) {
+    rawList = numberSplit;
+  } else if (text.includes('\n')) {
+    rawList = text.split('\n').map((s) => s.trim()).filter(Boolean);
+  } else {
+    rawList = [text];
+  }
+
+  return rawList.map((item, idx) => {
+    const clean = item.replace(/^\d+[\.\)]\s*/, '').trim();
+    const colonIdx = clean.indexOf(':');
+    if (colonIdx > 0 && colonIdx < 50) {
+      return {
+        num: idx + 1,
+        title: clean.slice(0, colonIdx).trim(),
+        text: clean.slice(colonIdx + 1).trim(),
+      };
+    }
+    return { num: idx + 1, text: clean };
+  });
+}
+
 export default async function AboutPage() {
   const settings = await getAboutSettings();
   const schoolName = settings?.school_name || 'Little Flowers Schools';
@@ -29,6 +66,9 @@ export default async function AboutPage() {
   const visionText =
     settings?.vision_text ||
     'To be a center of educational excellence that nurtures the holistic development of every child, fostering a community of confident, compassionate, and capable individuals ready to embrace the future.';
+
+  const missionPoints = parseStatementPoints(missionText);
+  const visionPoints = parseStatementPoints(visionText);
 
   return (
     <>
@@ -82,27 +122,85 @@ export default async function AboutPage() {
       </section>
 
       {/* ===== MISSION & VISION ===== */}
-      <section className="py-16 lg:py-24 bg-navy text-white">
-        <div className="section-container">
+      <section className="py-16 lg:py-24 bg-navy text-white relative overflow-hidden">
+        {/* Subtle decorative background glow */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-school-blue/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gold/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="section-container relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <span className="text-gold text-xs font-bold uppercase tracking-widest block mb-2">Our Guiding Light</span>
+            <h2 className="text-3xl lg:text-4xl font-bold !text-white">Our Mission &amp; Vision</h2>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-            <Card className="bg-white/5 border-white/10 text-white" padding="lg">
-              <div className="w-14 h-14 rounded-full bg-school-blue/20 flex items-center justify-center mb-6">
-                <Target size={28} className="text-school-blue" />
+            {/* Mission Card */}
+            <div className="bg-white/[0.06] backdrop-blur-md border border-white/15 rounded-2xl p-6 lg:p-8 flex flex-col shadow-xl hover:border-white/25 transition-all">
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div className="w-14 h-14 rounded-xl bg-school-blue/20 border border-school-blue/40 flex items-center justify-center shrink-0 shadow-inner">
+                  <Target size={28} className="text-school-blue-light" />
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-wider text-school-blue-light font-semibold block mb-0.5">Core Purpose</span>
+                  <h3 className="text-2xl lg:text-3xl font-bold !text-white tracking-tight">Our Mission</h3>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-              <p className="text-white/80 leading-relaxed text-lg">
-                {missionText}
-              </p>
-            </Card>
-            <Card className="bg-white/5 border-white/10 text-white" padding="lg">
-              <div className="w-14 h-14 rounded-full bg-gold/20 flex items-center justify-center mb-6">
-                <Lightbulb size={28} className="text-gold" />
+
+              <div className="space-y-3.5 flex-1">
+                {missionPoints.map((point) => (
+                  <div
+                    key={point.num}
+                    className="flex items-start gap-3.5 p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] transition-colors"
+                  >
+                    <span className="shrink-0 w-7 h-7 rounded-lg bg-school-blue text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                      {point.num}
+                    </span>
+                    <div className="flex-1 text-sm lg:text-base leading-relaxed text-white/90">
+                      {point.title && (
+                        <span className="font-semibold text-white block mb-0.5">
+                          {point.title}:
+                        </span>
+                      )}
+                      <p className="text-white/80">{point.text}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
-              <p className="text-white/80 leading-relaxed text-lg">
-                {visionText}
-              </p>
-            </Card>
+            </div>
+
+            {/* Vision Card */}
+            <div className="bg-white/[0.06] backdrop-blur-md border border-white/15 rounded-2xl p-6 lg:p-8 flex flex-col shadow-xl hover:border-white/25 transition-all">
+              <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/10">
+                <div className="w-14 h-14 rounded-xl bg-gold/20 border border-gold/40 flex items-center justify-center shrink-0 shadow-inner">
+                  <Lightbulb size={28} className="text-gold" />
+                </div>
+                <div>
+                  <span className="text-xs uppercase tracking-wider text-gold-light font-semibold block mb-0.5">Future Direction</span>
+                  <h3 className="text-2xl lg:text-3xl font-bold !text-white tracking-tight">Our Vision</h3>
+                </div>
+              </div>
+
+              <div className="space-y-3.5 flex-1">
+                {visionPoints.map((point) => (
+                  <div
+                    key={point.num}
+                    className="flex items-start gap-3.5 p-4 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] transition-colors"
+                  >
+                    <span className="shrink-0 w-7 h-7 rounded-lg bg-gold text-navy-dark font-bold text-xs flex items-center justify-center shadow-sm">
+                      {point.num}
+                    </span>
+                    <div className="flex-1 text-sm lg:text-base leading-relaxed text-white/90">
+                      {point.title && (
+                        <span className="font-semibold text-gold-light block mb-0.5">
+                          {point.title}:
+                        </span>
+                      )}
+                      <p className="text-white/80">{point.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
