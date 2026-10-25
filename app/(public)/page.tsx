@@ -420,10 +420,10 @@ export default async function HomePage() {
           />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: MapPin, title: 'Address', content: SCHOOL_INFO.address, color: 'text-school-blue' },
-              { icon: Phone, title: 'Phone', content: SCHOOL_INFO.phone, href: `tel:${SCHOOL_INFO.phone}`, color: 'text-navy' },
-              { icon: Mail, title: 'Email', content: SCHOOL_INFO.email, href: `mailto:${SCHOOL_INFO.email}`, color: 'text-gold-dark' },
-              { icon: Clock, title: 'Office Hours', content: SCHOOL_INFO.officeHours, color: 'text-success' },
+              { icon: MapPin, title: 'Address', content: settings?.address || SCHOOL_INFO.address, color: 'text-school-blue' },
+              { icon: Phone, title: 'Phone', content: settings?.phone || SCHOOL_INFO.phone, href: `tel:${settings?.phone || SCHOOL_INFO.phone}`, color: 'text-navy' },
+              { icon: Mail, title: 'Email', content: settings?.email || SCHOOL_INFO.email, href: `mailto:${settings?.email || SCHOOL_INFO.email}`, color: 'text-gold-dark' },
+              { icon: Clock, title: 'Timings & Hours', content: settings?.office_hours || settings?.school_timings || SCHOOL_INFO.officeHours, color: 'text-success' },
             ].map((item) => (
               <Card key={item.title} hover className="text-center">
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full bg-soft-blue ${item.color} mb-3`}>
@@ -440,13 +440,29 @@ export default async function HomePage() {
               </Card>
             ))}
           </div>
-          {/* Map placeholder */}
-          <div className="mt-10 rounded-xl border border-border bg-white h-64 lg:h-80 flex items-center justify-center text-text-muted">
-            <div className="text-center">
-              <MapPin size={32} className="mx-auto mb-2 text-border" />
-              <p className="text-sm">Map will be displayed here</p>
+
+          {/* Map Section */}
+          {settings?.map_url ? (
+            <div className="mt-10 rounded-xl overflow-hidden border border-border shadow-sm h-72 lg:h-80">
+              <iframe
+                src={settings.map_url}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="School Location Map"
+              />
             </div>
-          </div>
+          ) : (
+            <div className="mt-10 rounded-xl border border-border bg-white h-64 lg:h-80 flex items-center justify-center text-text-muted">
+              <div className="text-center">
+                <MapPin size={32} className="mx-auto mb-2 text-border" />
+                <p className="text-sm">Map will be displayed here</p>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>

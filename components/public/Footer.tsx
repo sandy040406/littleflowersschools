@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, Mail, MapPin, Globe, Camera, Video, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Globe, Camera, Video, MessageCircle, Clock } from 'lucide-react';
 import { NAV_ITEMS } from '@/lib/mock-data';
 
 const quickLinks = [
@@ -123,6 +123,12 @@ export default async function Footer() {
                 <li className="flex items-start gap-2.5 text-white/60 text-sm">
                   <MapPin size={15} className="mt-0.5 flex-shrink-0" />
                   <span>{settings.address}</span>
+                </li>
+              )}
+              {(settings.school_timings || settings.office_hours) && (
+                <li className="flex items-start gap-2.5 text-white/60 text-sm">
+                  <Clock size={15} className="mt-0.5 flex-shrink-0" />
+                  <span>{settings.school_timings || settings.office_hours}</span>
                 </li>
               )}
             </ul>

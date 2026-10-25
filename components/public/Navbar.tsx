@@ -6,11 +6,52 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, Phone, Mail, Clock, ChevronDown } from 'lucide-react';
 import { NAV_ITEMS, SCHOOL_INFO } from '@/lib/mock-data';
+import { getSiteSettings, SiteSettings } from '@/lib/content';
 
-export default function Navbar() {
+export interface NavbarProps {
+  initialSettings?: Partial<SiteSettings> | null;
+}
+
+export default function Navbar({ initialSettings }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [settings, setSettings] = useState<Partial<SiteSettings>>({
+    phone: initialSettings?.phone || SCHOOL_INFO.phone,
+    email: initialSettings?.email || SCHOOL_INFO.email,
+    school_timings: initialSettings?.school_timings || initialSettings?.office_hours || SCHOOL_INFO.timings,
+    office_hours: initialSettings?.office_hours || SCHOOL_INFO.officeHours,
+  });
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (initialSettings) {
+      setSettings(prev => ({
+        ...prev,
+        ...initialSettings,
+        phone: initialSettings.phone || prev.phone,
+        email: initialSettings.email || prev.email,
+        school_timings: initialSettings.school_timings || initialSettings.office_hours || prev.school_timings,
+      }));
+    }
+  }, [initialSettings]);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadSettings() {
+      try {
+        const data = await getSiteSettings();
+        if (mounted && data) {
+          setSettings(data);
+        }
+      } catch (err) {
+        // keep current fallback
+      }
+    }
+    loadSettings();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -23,24 +64,28 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [pathname]);
 
+  const displayPhone = settings.phone || SCHOOL_INFO.phone;
+  const displayEmail = settings.email || SCHOOL_INFO.email;
+  const displayTimings = settings.school_timings || settings.office_hours || SCHOOL_INFO.timings;
+
   return (
     <header className="w-full z-50 sticky top-0">
       {/* Utility Bar */}
       <div className="bg-navy text-white/90 text-sm hidden lg:block">
         <div className="section-container flex items-center justify-between py-2">
           <div className="flex items-center gap-6">
-            <a href={`tel:${SCHOOL_INFO.phone}`} className="flex items-center gap-1.5 hover:text-gold transition-colors">
+            <a href={`tel:${displayPhone}`} className="flex items-center gap-1.5 hover:text-gold transition-colors">
               <Phone size={13} />
-              <span>{SCHOOL_INFO.phone}</span>
+              <span>{displayPhone}</span>
             </a>
-            <a href={`mailto:${SCHOOL_INFO.email}`} className="flex items-center gap-1.5 hover:text-gold transition-colors">
+            <a href={`mailto:${displayEmail}`} className="flex items-center gap-1.5 hover:text-gold transition-colors">
               <Mail size={13} />
-              <span>{SCHOOL_INFO.email}</span>
+              <span>{displayEmail}</span>
             </a>
           </div>
           <div className="flex items-center gap-1.5 text-white/70">
             <Clock size={13} />
-            <span>{SCHOOL_INFO.timings}</span>
+            <span>{displayTimings}</span>
           </div>
         </div>
       </div>
@@ -136,11 +181,11 @@ export default function Navbar() {
               </div>
               {/* Mobile contact info */}
               <div className="pt-3 mt-2 border-t border-border space-y-2 text-sm text-text-secondary">
-                <a href={`tel:${SCHOOL_INFO.phone}`} className="flex items-center gap-2">
-                  <Phone size={14} /> {SCHOOL_INFO.phone}
+                <a href={`tel:${displayPhone}`} className="flex items-center gap-2">
+                  <Phone size={14} /> {displayPhone}
                 </a>
-                <a href={`mailto:${SCHOOL_INFO.email}`} className="flex items-center gap-2">
-                  <Mail size={14} /> {SCHOOL_INFO.email}
+                <a href={`mailto:${displayEmail}`} className="flex items-center gap-2">
+                  <Mail size={14} /> {displayEmail}
                 </a>
               </div>
             </div>
