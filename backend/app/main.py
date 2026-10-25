@@ -5,7 +5,7 @@ Main application entry point.
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import os
@@ -122,6 +122,9 @@ def seed_content(db):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: create tables + seed admin. Shutdown: cleanup."""
+    # Refuse to start in production with default secrets/passwords
+    settings.validate_for_production()
+
     # Create all tables
     Base.metadata.create_all(bind=engine)
     added = sync_missing_columns(engine)
@@ -152,17 +155,32 @@ app = FastAPI(
     description="Backend API for Little Flowers Schools website and portal.",
     version="0.1.0",
     lifespan=lifespan,
+    # Hide interactive API docs on the live site
+    docs_url=None if settings.is_production else "/docs",
+    redoc_url=None if settings.is_production else "/redoc",
+    openapi_url=None if settings.is_production else "/openapi.json",
 )
+
+# ── Security headers ────────────────────────────────────────
+
+
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    if settings.is_production:
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
+
 
 # ── CORS Middleware ─────────────────────────────────────────
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.FRONTEND_URL,
-        "http://localhost:3000",
-        "http://localhost:3001",
-    ],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

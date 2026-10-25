@@ -11,7 +11,9 @@ Authentication routes.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.core.database import get_db
+from app.core.ratelimit import RateLimiter
 from app.core.security import (
     verify_password,
     hash_password,
@@ -32,6 +34,13 @@ from app.schemas.auth import (
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
+_settings = get_settings()
+# Shared by both login routes: caps attempts per IP to stop password guessing.
+login_limit = RateLimiter(
+    max_requests=_settings.LOGIN_RATE_LIMIT,
+    window_seconds=_settings.LOGIN_RATE_WINDOW_SECONDS,
+)
+
 
 def _token_response(user: User) -> TokenResponse:
     """Issue a fresh token pair for `user`."""
@@ -46,7 +55,7 @@ def _token_response(user: User) -> TokenResponse:
     )
 
 
-@router.post("/login/admin", response_model=TokenResponse)
+@router.post("/login/admin", response_model=TokenResponse, dependencies=[Depends(login_limit)])
 def login_admin_teacher(body: AdminTeacherLogin, db: Session = Depends(get_db)):
     """
     Login for Admin and Teacher roles.
@@ -78,7 +87,7 @@ def login_admin_teacher(body: AdminTeacherLogin, db: Session = Depends(get_db)):
     return _token_response(user)
 
 
-@router.post("/login/parent", response_model=TokenResponse)
+@router.post("/login/parent", response_model=TokenResponse, dependencies=[Depends(login_limit)])
 def login_parent(body: ParentLogin, db: Session = Depends(get_db)):
     """
     Login for Parent role.

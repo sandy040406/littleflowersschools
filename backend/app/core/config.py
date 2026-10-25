@@ -8,6 +8,9 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
+    # "development" (local) or "production" (live). Production turns on strict checks.
+    ENVIRONMENT: str = "development"
+
     # Database
     DATABASE_URL: str = "sqlite:///./app.db"
 
@@ -35,6 +38,8 @@ class Settings(BaseSettings):
 
     # CORS
     FRONTEND_URL: str = "http://localhost:3000"
+    # Extra allowed origins, comma-separated (e.g. "https://www.littleflowersschools.com")
+    CORS_ORIGINS: str = ""
 
     # Rate limiting
     # Set TRUST_PROXY_HEADERS=true only when running behind a reverse proxy
@@ -42,6 +47,37 @@ class Settings(BaseSettings):
     TRUST_PROXY_HEADERS: bool = False
     ENQUIRY_RATE_LIMIT: int = 10           # submissions allowed per window, per IP
     ENQUIRY_RATE_WINDOW_SECONDS: int = 300  # 5 minutes
+    # Login attempts per IP per window. Generous because many families may share
+    # one school/office Wi-Fi address, but it still stops password guessing.
+    LOGIN_RATE_LIMIT: int = 30
+    LOGIN_RATE_WINDOW_SECONDS: int = 300
+
+    @property
+    def is_production(self) -> bool:
+        return self.ENVIRONMENT.lower() == "production"
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        """Origins allowed by CORS. localhost is only allowed outside production."""
+        origins = [self.FRONTEND_URL.rstrip("/")]
+        origins += [o.strip().rstrip("/") for o in self.CORS_ORIGINS.split(",") if o.strip()]
+        if not self.is_production:
+            origins += ["http://localhost:3000", "http://localhost:3001"]
+        return list(dict.fromkeys(origins))  # de-duplicate, keep order
+
+    def validate_for_production(self) -> None:
+        """Raise if production is configured with unsafe defaults. No-op in development."""
+        if not self.is_production:
+            return
+        problems = []
+        if self.SECRET_KEY in ("change-me", "change-me-to-a-random-secret-string") or len(self.SECRET_KEY) < 32:
+            problems.append("SECRET_KEY must be a random string of at least 32 characters")
+        if self.ADMIN_PASSWORD == "admin123" or len(self.ADMIN_PASSWORD) < 10:
+            problems.append("ADMIN_PASSWORD must not be the default and must be at least 10 characters")
+        if self.FRONTEND_URL.startswith("http://localhost"):
+            problems.append("FRONTEND_URL must be your real https website address")
+        if problems:
+            raise RuntimeError("Unsafe production configuration:\n - " + "\n - ".join(problems))
 
     model_config = {
         "env_file": ".env",
