@@ -17,8 +17,8 @@
 |---|---|---|---|---|
 | **Phase 1** | Application Features | Public site, Portals, CMS, Enquiries, Security, Dashboards | **100% COMPLETE** | All 12 functional milestones built & tested. 0 mock data remaining. |
 | **Phase 2** | Production Infrastructure | Security Hardening (L1), Cloudflare R2 (L2), PostgreSQL (L3), Clean Seeding (L4), Deploy Configs (L5) | **100% COMPLETE** | All L1-L5 readiness steps fully implemented, tested, and verified. |
-| **Phase 3** | Live Deployment | Provision Neon DB, Cloudflare R2, Render Web Service, Vercel Frontend, Cloudflare DNS | **READY FOR EXECUTION** | Step-by-step account setup and live deployment. |
-| **Phase 4** | Real School Customization | School logo, real faculty photos, principal's message, custom text copy | **PREPARED** | Checklist defined in `school_details_checklist.md`. CMS live for real-time edits. |
+| **Phase 3** | Live Deployment | Provision Neon DB, Cloudflare R2, Render Web Service, Vercel Frontend | **100% COMPLETE** | Live at `littleflowersschools.vercel.app` & `littleflowers-backend.onrender.com`. |
+| **Phase 4** | Real School Customization | Custom domain linking, real school branding, CMS content entry | **CURRENT STEP** | Linking `littleflowersschools.com` and entering real school data. |
 
 ---
 
@@ -84,20 +84,16 @@
 - **Status**: Live, connected to Neon PostgreSQL and Cloudflare R2
 - Optional Custom Domain: `api.littleflowersschools.com`
 
-### 4. Frontend Deployment (Vercel)
-1. Import repository into [Vercel](https://vercel.com).
-2. Framework preset: Next.js.
-3. Set environment variable:
-   - `NEXT_PUBLIC_API_URL=https://api.littleflowersschools.com`
-4. Add custom domains: `littleflowersschools.com` and `www.littleflowersschools.com`.
+### 4. Frontend Deployment (Vercel) — COMPLETED & LIVE
+- **Live URL**: `https://littleflowersschools.vercel.app`
+- **Environment Variable**: `NEXT_PUBLIC_API_URL=https://littleflowers-backend.onrender.com`
+- **Status**: Live, connected to Render backend, serving Next.js 16 App Router
 
-### 5. DNS (Cloudflare + GoDaddy)
-1. Update nameservers at GoDaddy to Cloudflare.
-2. In Cloudflare DNS:
-   - `CNAME @ -> cname.vercel-dns.com` (or Vercel A record `76.76.21.21`)
-   - `CNAME www -> cname.vercel-dns.com`
-   - `CNAME api -> <render-service-url>.onrender.com`
-   - `CNAME media -> <cloudflare-r2-public-domain>`
+### 5. Custom Domain Configuration (GoDaddy & Cloudflare)
+- **Primary Domain**: `littleflowersschools.com`
+- **Records for Vercel**:
+  - `A Record`: Host `@` -> `76.76.21.21`
+  - `CNAME Record`: Host `www` -> `cname.vercel-dns.com`
 
 ---
 
