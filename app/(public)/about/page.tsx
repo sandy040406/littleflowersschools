@@ -5,6 +5,8 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { PLACEHOLDER_IMAGES } from '@/lib/mock-data';
+import { mediaUrl } from '@/lib/api';
+import type { FacilityItem } from '@/lib/content';
 
 export const metadata = {
   title: 'About',
@@ -69,6 +71,37 @@ export default async function AboutPage() {
 
   const missionPoints = parseStatementPoints(missionText);
   const visionPoints = parseStatementPoints(visionText);
+
+  // Dynamic Principal info with fallback
+  const principalName = settings?.principal_name || 'Dr. Meena Sharma';
+  const principalTitle = settings?.principal_title || 'Principal';
+  const principalImage = settings?.principal_image_url || PLACEHOLDER_IMAGES.principal;
+  const principalMessage = settings?.principal_message || [
+    'Welcome to Little Flowers Schools. It is a privilege to lead an institution where every day is filled with the joy of learning and the excitement of discovery.',
+    'We believe that a school should be a place where children feel safe to express themselves, challenged to reach their potential, and supported in their individual journeys. Our commitment is to provide an environment that balances academic rigor with holistic development.',
+    'Education is a partnership between the school, the students, and the parents. Together, we can build a strong foundation for our children, equipping them not just with knowledge, but with the values, resilience, and skills they need for a fulfilling life.',
+  ].join('\n\n');
+
+  // Dynamic Facilities with fallback
+  const defaultFacilities: FacilityItem[] = [
+    { id: 'f1', imageUrl: PLACEHOLDER_IMAGES.classroom, title: 'Smart Classrooms', description: 'Spacious, well-lit classrooms equipped with interactive displays and ergonomic seating.' },
+    { id: 'f2', imageUrl: PLACEHOLDER_IMAGES.library, title: 'Resource Library', description: 'A vast collection of books, digital resources, and quiet reading spaces.' },
+    { id: 'f3', imageUrl: PLACEHOLDER_IMAGES.science, title: 'Science Laboratories', description: 'Fully equipped labs for Physics, Chemistry, and Biology to encourage hands-on learning.' },
+    { id: 'f4', imageUrl: PLACEHOLDER_IMAGES.computer, title: 'Computer Labs', description: 'Modern computing facilities with high-speed internet and the latest software.' },
+    { id: 'f5', imageUrl: PLACEHOLDER_IMAGES.playground, title: 'Sports Facilities', description: 'Expansive playgrounds and courts for various indoor and outdoor sports.' },
+    { id: 'f6', imageUrl: PLACEHOLDER_IMAGES.music, title: 'Arts & Music Rooms', description: 'Dedicated studios for visual arts, classical music, and contemporary dance.' },
+  ];
+
+  let facilities: FacilityItem[] = defaultFacilities;
+  if (settings?.facilities_json) {
+    try {
+      const parsed = JSON.parse(settings.facilities_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        facilities = parsed;
+      }
+    } catch {}
+  }
+
 
   return (
     <>
@@ -236,27 +269,23 @@ export default async function AboutPage() {
         <div className="section-container">
           <div className="bg-white rounded-2xl border border-border shadow-md overflow-hidden">
             <div className="grid lg:grid-cols-5">
-              <div className="lg:col-span-2 relative h-[400px] lg:h-auto">
+              <div className="lg:col-span-2 relative h-[400px] lg:h-auto min-h-[360px]">
                 <Image
-                  src={PLACEHOLDER_IMAGES.principal}
-                  alt="Principal"
+                  src={mediaUrl(principalImage)}
+                  alt={principalName}
                   fill
                   className="object-cover object-top"
+                  unoptimized
                 />
               </div>
-              <div className="lg:col-span-3 p-8 lg:p-12">
-                <h2 className="text-2xl font-bold text-navy mb-2">Message from the Principal</h2>
-                <h3 className="text-school-blue font-medium mb-6">Dr. Meena Sharma</h3>
-                <div className="space-y-4 text-text-secondary leading-relaxed italic">
-                  <p>
-                    "Welcome to Little Flowers Schools. It is a privilege to lead an institution where every day is filled with the joy of learning and the excitement of discovery."
-                  </p>
-                  <p>
-                    "We believe that a school should be a place where children feel safe to express themselves, challenged to reach their potential, and supported in their individual journeys. Our commitment is to provide an environment that balances academic rigor with holistic development."
-                  </p>
-                  <p>
-                    "Education is a partnership between the school, the students, and the parents. Together, we can build a strong foundation for our children, equipping them not just with knowledge, but with the values, resilience, and skills they need for a fulfilling life."
-                  </p>
+              <div className="lg:col-span-3 p-8 lg:p-12 flex flex-col justify-center">
+                <span className="text-xs font-bold uppercase tracking-wider text-school-blue block mb-1">Leadership Desk</span>
+                <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-1">Message from the {principalTitle}</h2>
+                <h3 className="text-school-blue font-semibold text-lg mb-6">{principalName}</h3>
+                <div className="space-y-4 text-text-secondary leading-relaxed italic text-base lg:text-lg">
+                  {principalMessage.split('\n\n').map((para: string, idx: number) => (
+                    <p key={idx}>{para.startsWith('"') ? para : `"${para}"`}</p>
+                  ))}
                 </div>
               </div>
             </div>
@@ -272,26 +301,20 @@ export default async function AboutPage() {
             subtitle="Thoughtfully designed spaces that inspire creativity, encourage collaboration, and support comprehensive learning."
           />
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { img: PLACEHOLDER_IMAGES.classroom, title: 'Smart Classrooms', desc: 'Spacious, well-lit classrooms equipped with interactive displays and ergonomic seating.' },
-              { img: PLACEHOLDER_IMAGES.library, title: 'Resource Library', desc: 'A vast collection of books, digital resources, and quiet reading spaces.' },
-              { img: PLACEHOLDER_IMAGES.science, title: 'Science Laboratories', desc: 'Fully equipped labs for Physics, Chemistry, and Biology to encourage hands-on learning.' },
-              { img: PLACEHOLDER_IMAGES.computer, title: 'Computer Labs', desc: 'Modern computing facilities with high-speed internet and the latest software.' },
-              { img: PLACEHOLDER_IMAGES.playground, title: 'Sports Facilities', desc: 'Expansive playgrounds and courts for various indoor and outdoor sports.' },
-              { img: PLACEHOLDER_IMAGES.music, title: 'Arts & Music Rooms', desc: 'Dedicated studios for visual arts, classical music, and contemporary dance.' },
-            ].map((facility) => (
-              <Card key={facility.title} padding="none" hover className="overflow-hidden">
+            {facilities.map((facility) => (
+              <Card key={facility.id || facility.title} padding="none" hover className="overflow-hidden bg-white">
                 <div className="relative h-48">
                   <Image
-                    src={facility.img}
+                    src={mediaUrl(facility.imageUrl || (facility as any).img)}
                     alt={facility.title}
                     fill
                     className="object-cover"
+                    unoptimized
                   />
                 </div>
                 <div className="p-5">
                   <h3 className="text-lg font-semibold text-navy mb-2">{facility.title}</h3>
-                  <p className="text-sm text-text-secondary leading-relaxed">{facility.desc}</p>
+                  <p className="text-sm text-text-secondary leading-relaxed">{facility.description || (facility as any).desc}</p>
                 </div>
               </Card>
             ))}

@@ -51,6 +51,40 @@ export interface FacultyMember {
 export const getPublicFaculty = (signal?: AbortSignal) =>
   api<FacultyMember[]>('/api/content/faculty', { auth: false, signal });
 
+export interface FacilityItem {
+  id?: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+}
+
+export interface ActivityItem {
+  id?: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  icon?: string;
+  bullets?: string[];
+}
+
+export interface JourneyStage {
+  id?: string;
+  name: string;
+  grades: string;
+  focus: string;
+  highlights: string[];
+  color?: string;
+}
+
+export interface AcademicMethodology {
+  methodology_title?: string;
+  methodology_text?: string;
+  assessment_title?: string;
+  assessment_text?: string;
+  support_title?: string;
+  support_text?: string;
+}
+
 export interface SiteSettings {
   id: number;
   school_name: string;
@@ -68,6 +102,14 @@ export interface SiteSettings {
   about_text: string | null;
   vision_text: string | null;
   mission_text: string | null;
+  principal_name: string | null;
+  principal_title: string | null;
+  principal_image_url: string | null;
+  principal_message: string | null;
+  facilities_json: string | null;
+  activities_json: string | null;
+  educational_journey_json: string | null;
+  academics_methodology_json: string | null;
   updated_at: string | null;
 }
 
@@ -76,4 +118,5 @@ export const getSiteSettings = (signal?: AbortSignal) =>
 
 export const updateSiteSettings = (body: Partial<SiteSettings>) =>
   api<SiteSettings>('/api/content/settings', { method: 'PUT', body });
+
 

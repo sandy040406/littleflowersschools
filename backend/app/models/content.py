@@ -74,8 +74,22 @@ class SiteSetting(Base):
     about_text = Column(Text, nullable=True)
     vision_text = Column(Text, nullable=True)
     mission_text = Column(Text, nullable=True)
+
+    # Principal Desk CMS
+    principal_name = Column(String(200), default="Dr. Meena Sharma", nullable=True)
+    principal_title = Column(String(200), default="Principal", nullable=True)
+    principal_image_url = Column(String(500), default="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop", nullable=True)
+    principal_message = Column(Text, nullable=True)
+
+    # Rich Sections JSON storage
+    facilities_json = Column(Text, nullable=True)          # List of { id, title, description, image_url }
+    activities_json = Column(Text, nullable=True)          # List of { id, title, description, image_url, icon, bullets }
+    educational_journey_json = Column(Text, nullable=True) # List of { id, name, grades, focus, highlights, color }
+    academics_methodology_json = Column(Text, nullable=True) # { methodology_text, assessment_text, support_text }
+
     updated_at = Column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+

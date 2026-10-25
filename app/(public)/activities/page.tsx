@@ -4,13 +4,24 @@ import PageHero from '@/components/ui/PageHero';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
-import { ACTIVITIES_DATA, PLACEHOLDER_IMAGES } from '@/lib/mock-data';
+import { ACTIVITIES_DATA } from '@/lib/mock-data';
+import { mediaUrl } from '@/lib/api';
+import type { ActivityItem } from '@/lib/content';
 
 export const metadata = {
   title: 'Student Activities',
 };
 
-// Map string icon names from mock data to actual Lucide components
+async function getActivitiesSettings() {
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${base}/api/content/settings`, { next: { revalidate: 60 } });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
+// Map string icon names to actual Lucide components
 const iconMap: Record<string, React.ReactNode> = {
   Trophy: <Trophy size={28} />,
   Music: <Music size={28} />,
@@ -21,7 +32,18 @@ const iconMap: Record<string, React.ReactNode> = {
   Heart: <Heart size={28} />,
 };
 
-export default function ActivitiesPage() {
+export default async function ActivitiesPage() {
+  const settings = await getActivitiesSettings();
+  let activities: ActivityItem[] = ACTIVITIES_DATA;
+  if (settings?.activities_json) {
+    try {
+      const parsed = JSON.parse(settings.activities_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        activities = parsed;
+      }
+    } catch {}
+  }
+
   return (
     <>
       <PageHero
@@ -38,20 +60,28 @@ export default function ActivitiesPage() {
           />
 
           <div className="space-y-16 lg:space-y-24">
-            {ACTIVITIES_DATA.map((activity, index) => {
+            {activities.map((activity, index) => {
               const isEven = index % 2 === 0;
+              const bullets = activity.bullets && activity.bullets.length > 0
+                ? activity.bullets
+                : activity.title === 'Sports'
+                ? ['Athletics & Track Events', 'Team Sports (Cricket, Football, Kho-Kho)', 'Indoor Games & Chess']
+                : activity.title === 'Clubs'
+                ? ['Science & Innovation Club', 'Eco & Nature Club', 'Literary & Debate Society']
+                : ['Regular weekly practice sessions', 'Expert guidance & mentorship', 'Showcases, annual days & competitions'];
               
               return (
-                <div key={activity.title} className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-center ${!isEven ? 'lg:rtl' : ''}`}>
+                <div key={activity.id || activity.title} className={`grid lg:grid-cols-2 gap-10 lg:gap-16 items-center ${!isEven ? 'lg:rtl' : ''}`}>
                   {/* Image Side */}
                   <div className={`relative ${!isEven ? 'lg:order-2' : ''}`}>
-                    <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-xl">
+                    <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-xl bg-soft-blue">
                       <Image
-                        src={activity.imageUrl}
+                        src={mediaUrl(activity.imageUrl)}
                         alt={activity.title}
                         fill
                         className="object-cover"
                         sizes="(max-width: 1024px) 100vw, 50vw"
+                        unoptimized
                       />
                     </div>
                     {/* Decorative Elements */}
@@ -62,36 +92,21 @@ export default function ActivitiesPage() {
                   {/* Content Side */}
                   <div className={`${!isEven ? 'lg:order-1 lg:ltr' : ''}`}>
                     <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-school-blue/10 text-school-blue mb-6">
-                      {iconMap[activity.icon]}
+                      {iconMap[activity.icon || 'Trophy'] || <Trophy size={28} />}
                     </div>
                     <h2 className="text-3xl font-bold text-navy mb-4">{activity.title}</h2>
                     <p className="text-lg text-text-secondary leading-relaxed mb-6">
                       {activity.description}
                     </p>
                     
-                    {/* Dynamic bullet points based on category (mock content) */}
+                    {/* Bullet points */}
                     <ul className="space-y-3 mb-8">
-                      {activity.title === 'Sports' && (
-                        <>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Athletics & Track Events</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Team Sports (Basketball, Football)</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Indoor Games & Chess</li>
-                        </>
-                      )}
-                      {activity.title === 'Clubs' && (
-                        <>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Science & Innovation Club</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Eco & Environment Club</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Literary & Debate Society</li>
-                        </>
-                      )}
-                      {activity.title !== 'Sports' && activity.title !== 'Clubs' && (
-                        <>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Regular weekly sessions</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Expert guidance & coaching</li>
-                          <li className="flex items-center gap-3 text-text-secondary"><div className="w-1.5 h-1.5 rounded-full bg-navy" /> Opportunities for performance & display</li>
-                        </>
-                      )}
+                      {bullets.map((bullet, bIdx) => (
+                        <li key={bIdx} className="flex items-center gap-3 text-text-secondary">
+                          <div className="w-1.5 h-1.5 rounded-full bg-school-blue" />
+                          <span>{bullet}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>

@@ -105,6 +105,14 @@ class SiteSettingsOut(BaseModel):
     about_text: Optional[str] = None
     vision_text: Optional[str] = None
     mission_text: Optional[str] = None
+    principal_name: Optional[str] = None
+    principal_title: Optional[str] = None
+    principal_image_url: Optional[str] = None
+    principal_message: Optional[str] = None
+    facilities_json: Optional[str] = None
+    activities_json: Optional[str] = None
+    educational_journey_json: Optional[str] = None
+    academics_methodology_json: Optional[str] = None
     updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -126,4 +134,13 @@ class SiteSettingsUpdate(BaseModel):
     about_text: Optional[str] = None
     vision_text: Optional[str] = None
     mission_text: Optional[str] = None
+    principal_name: Optional[str] = None
+    principal_title: Optional[str] = None
+    principal_image_url: Optional[str] = None
+    principal_message: Optional[str] = None
+    facilities_json: Optional[str] = None
+    activities_json: Optional[str] = None
+    educational_journey_json: Optional[str] = None
+    academics_methodology_json: Optional[str] = None
+
 

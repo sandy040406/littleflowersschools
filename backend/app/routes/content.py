@@ -239,6 +239,12 @@ def get_public_faculty(db: Session = Depends(get_db)):
 
 def get_or_create_settings(db: Session) -> SiteSetting:
     setting = db.query(SiteSetting).first()
+    default_principal_msg = (
+        "Welcome to Little Flowers Schools. It is a privilege to lead an institution where every day is filled with the joy of learning and the excitement of discovery.\n\n"
+        "We believe that a school should be a place where children feel safe to express themselves, challenged to reach their potential, and supported in their individual journeys. Our commitment is to provide an environment that balances academic rigor with holistic development.\n\n"
+        "Education is a partnership between the school, the students, and the parents. Together, we can build a strong foundation for our children, equipping them not just with knowledge, but with the values, resilience, and skills they need for a fulfilling life."
+    )
+
     if not setting:
         setting = SiteSetting(
             school_name="Little Flowers Schools",
@@ -251,11 +257,33 @@ def get_or_create_settings(db: Session) -> SiteSetting:
             about_text="At Little Flowers Schools, we believe that education is about nurturing the whole child — mind, body, and spirit. For over two decades, we have been providing high-quality education in a safe, caring, and stimulating environment.",
             vision_text="To be a center of educational excellence that empowers students to reach their full potential and become thoughtful, productive global citizens.",
             mission_text="To provide an inclusive, inspiring learning environment that fosters academic excellence, character development, and lifelong curiosity.",
+            principal_name="Dr. Meena Sharma",
+            principal_title="Principal",
+            principal_image_url="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop",
+            principal_message=default_principal_msg,
         )
         db.add(setting)
         db.commit()
         db.refresh(setting)
+    else:
+        changed = False
+        if not setting.principal_name:
+            setting.principal_name = "Dr. Meena Sharma"
+            changed = True
+        if not setting.principal_title:
+            setting.principal_title = "Principal"
+            changed = True
+        if not setting.principal_image_url:
+            setting.principal_image_url = "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=500&fit=crop"
+            changed = True
+        if not setting.principal_message:
+            setting.principal_message = default_principal_msg
+            changed = True
+        if changed:
+            db.commit()
+            db.refresh(setting)
     return setting
+
 
 
 @router.get("/settings", response_model=SiteSettingsOut)

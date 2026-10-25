@@ -6,11 +6,69 @@ import { BookOpen, BrainCircuit, CheckCircle2, ChevronDown, Compass, FileText, F
 import { ACADEMICS_FAQ } from '@/lib/mock-data';
 import Button from '@/components/ui/Button';
 
+import type { JourneyStage } from '@/lib/content';
+
 export const metadata = {
   title: 'Academics',
 };
 
-export default function AcademicsPage() {
+async function getAcademicsSettings() {
+  const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${base}/api/content/settings`, { next: { revalidate: 60 } });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
+export default async function AcademicsPage() {
+  const settings = await getAcademicsSettings();
+
+  const defaultJourney: JourneyStage[] = [
+    {
+      id: 'pre-primary',
+      name: 'Pre-Primary',
+      grades: 'Nursery – KG',
+      focus: 'Exploration & Play',
+      highlights: ['Phonics and basic literacy', 'Number readiness', 'Motor skills development', 'Social interaction'],
+      color: 'bg-gold'
+    },
+    {
+      id: 'primary',
+      name: 'Primary',
+      grades: 'Class I – V',
+      focus: 'Foundation Building',
+      highlights: ['Core language skills', 'Mathematical concepts', 'Environmental awareness', 'Creative expression'],
+      color: 'bg-school-blue'
+    },
+    {
+      id: 'middle',
+      name: 'Middle School',
+      grades: 'Class VI – VIII',
+      focus: 'Concept Expansion',
+      highlights: ['Subject-specific learning', 'Scientific inquiry', 'Historical perspective', 'Language proficiency'],
+      color: 'bg-white/20'
+    },
+    {
+      id: 'secondary',
+      name: 'Secondary',
+      grades: 'Class IX – X',
+      focus: 'Academic Preparation',
+      highlights: ['Advanced concepts', 'Board exam preparation', 'Career counseling', 'Analytical skills'],
+      color: 'bg-success'
+    }
+  ];
+
+  let stages: JourneyStage[] = defaultJourney;
+  if (settings?.educational_journey_json) {
+    try {
+      const parsed = JSON.parse(settings.educational_journey_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        stages = parsed;
+      }
+    } catch {}
+  }
+
   return (
     <>
       <PageHero
@@ -69,64 +127,42 @@ export default function AcademicsPage() {
             subtitle="Structured phases of learning tailored to the developmental needs of children at every age."
             centered={true}
           />
-          {/* We use a div to trick the text color of the SectionHeader above which defaults to navy text for the title */}
           <style dangerouslySetInnerHTML={{__html: `
             .bg-navy h2 { color: white !important; }
             .bg-navy p.text-text-secondary { color: rgba(255,255,255,0.7) !important; }
           `}} />
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: 'Pre-Primary',
-                grades: 'Nursery – KG',
-                focus: 'Exploration & Play',
-                features: ['Phonics and basic literacy', 'Number readiness', 'Motor skills development', 'Social interaction'],
-                color: 'bg-gold'
-              },
-              {
-                title: 'Primary',
-                grades: 'Class I – V',
-                focus: 'Foundation Building',
-                features: ['Core language skills', 'Mathematical concepts', 'Environmental awareness', 'Creative expression'],
-                color: 'bg-school-blue'
-              },
-              {
-                title: 'Middle School',
-                grades: 'Class VI – VIII',
-                focus: 'Concept Expansion',
-                features: ['Subject-specific learning', 'Scientific inquiry', 'Historical perspective', 'Language proficiency'],
-                color: 'bg-white/20'
-              },
-              {
-                title: 'Secondary',
-                grades: 'Class IX – X',
-                focus: 'Academic Preparation',
-                features: ['Advanced concepts', 'Board exam preparation', 'Career counseling', 'Analytical skills'],
-                color: 'bg-success'
-              }
-            ].map((level) => (
-              <div key={level.title} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-colors">
-                <div className={`${level.color} p-4`}>
-                  <h3 className={`text-xl font-bold ${level.color === 'bg-white/20' ? 'text-white' : 'text-navy'} mb-1`}>{level.title}</h3>
-                  <p className={`${level.color === 'bg-white/20' ? 'text-white/80' : 'text-navy/80'} text-sm font-medium`}>{level.grades}</p>
-                </div>
-                <div className="p-6">
-                  <div className="mb-4">
-                    <span className="text-xs uppercase tracking-wider text-white/50 font-semibold">Key Focus</span>
-                    <p className="text-white font-medium">{level.focus}</p>
+            {stages.map((level, idx) => {
+              const colorClass = level.color || (idx === 0 ? 'bg-gold' : idx === 1 ? 'bg-school-blue' : idx === 2 ? 'bg-white/20' : 'bg-success');
+              const features = level.highlights || (level as any).features || [];
+              const isDarkHeader = colorClass === 'bg-white/20' || colorClass === 'bg-navy';
+              
+              return (
+                <div key={level.id || level.name || (level as any).title} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:bg-white/10 transition-colors flex flex-col justify-between">
+                  <div>
+                    <div className={`${colorClass} p-4`}>
+                      <h3 className={`text-xl font-bold ${isDarkHeader ? 'text-white' : 'text-navy'} mb-1`}>{level.name || (level as any).title}</h3>
+                      <p className={`${isDarkHeader ? 'text-white/80' : 'text-navy/80'} text-sm font-medium`}>{level.grades}</p>
+                    </div>
+                    <div className="p-6">
+                      <div className="mb-4">
+                        <span className="text-xs uppercase tracking-wider text-white/50 font-semibold">Key Focus</span>
+                        <p className="text-white font-medium">{level.focus}</p>
+                      </div>
+                      <ul className="space-y-3">
+                        {features.map((feature: string, i: number) => (
+                          <li key={i} className="flex items-start gap-2 text-sm text-white/70">
+                            <CheckCircle2 size={16} className="text-gold flex-shrink-0 mt-0.5" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
-                  <ul className="space-y-3">
-                    {level.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-white/70">
-                        <CheckCircle2 size={16} className="text-gold flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
