@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.pytest_cache
+*.tsbuildinfo
+backend/venv
+backend/__pycache__
+backend/**/__pycache__
+backend/uploads
+uploads
+.env*
+.antigravity
+.cortex
+.jetski
