@@ -136,7 +136,10 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_admin(db)
-        seed_content(db)
+        if not settings.is_production or settings.SEED_DEMO_CONTENT:
+            seed_content(db)
+        else:
+            print("[INFO] Production mode: skipping sample demo content (manage real content via Admin Portal).")
     finally:
         db.close()
 

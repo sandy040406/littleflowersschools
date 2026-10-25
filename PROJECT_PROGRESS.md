@@ -16,8 +16,8 @@
 | Track | Phase | Scope | Status | Notes |
 |---|---|---|---|---|
 | **Phase 1** | Application Features | Public site, Portals, CMS, Enquiries, Security, Dashboards | **100% COMPLETE** | All 12 functional milestones built & tested. 0 mock data remaining. |
-| **Phase 2** | Production Infrastructure | Security Hardening (L1), Cloudflare R2 (L2), PostgreSQL (L3), Clean Seeding (L4), Deploy Configs (L5) | **IN PROGRESS** | **L1 Completed (`1b73bce`)**. Currently executing **L2 (R2 Storage)**. |
-| **Phase 3** | Live Deployment | Provision Neon DB, Cloudflare R2, Render Web Service, Vercel Frontend, Cloudflare DNS | **READY FOR EXECUTION** | Targeted 2-Day Launch Window. |
+| **Phase 2** | Production Infrastructure | Security Hardening (L1), Cloudflare R2 (L2), PostgreSQL (L3), Clean Seeding (L4), Deploy Configs (L5) | **100% COMPLETE** | All L1-L5 readiness steps fully implemented, tested, and verified. |
+| **Phase 3** | Live Deployment | Provision Neon DB, Cloudflare R2, Render Web Service, Vercel Frontend, Cloudflare DNS | **READY FOR EXECUTION** | Step-by-step account setup and live deployment. |
 | **Phase 4** | Real School Customization | School logo, real faculty photos, principal's message, custom text copy | **PREPARED** | Checklist defined in `school_details_checklist.md`. CMS live for real-time edits. |
 
 ---
@@ -60,9 +60,9 @@
 |---|---|---|---|
 | **L1** | **Security Hardening** | Refuse default passwords & short secret keys in production, login rate-limiting (30/5m), CORS restriction to production domain, security headers (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) | **COMPLETED** (`1b73bce`) |
 | **L2** | **Cloudflare R2 Storage** | Seamless dual-mode storage (`STORAGE_BACKEND=local\|r2`), S3-compatible `boto3` client, transparent public URLs, image host whitelist in `next.config.ts`, automated tests | **COMPLETED** (`c073d70`) |
-| **L3** | **PostgreSQL Compatibility** | Add `psycopg[binary]`, ensure dialect-agnostic database connections for Neon PostgreSQL, verify migrations and connection pooling | **NEXT (Ready to Execute)** |
-| **L4** | **Production Seeding Rules** | Skip mock Unsplash slides in production; seed only clean Super Admin from environment variables | **QUEUED** |
-| **L5** | **Deploy Artifacts & Clean Up** | Production `Dockerfile`, `render.yaml`, `.env.production.example`, remove stray raw assets | **QUEUED** |
+| **L3** | **PostgreSQL Compatibility** | Add `psycopg[binary]`, ensure dialect-agnostic database connections for Neon PostgreSQL, verify migrations and connection pooling | **COMPLETED** |
+| **L4** | **Production Seeding Rules** | Skip mock Unsplash slides in production; seed only clean Super Admin from environment variables | **COMPLETED** |
+| **L5** | **Deploy Artifacts & Clean Up** | Production `Dockerfile`, `render.yaml`, `.env.production.example`, remove stray raw assets | **COMPLETED** |
 
 ---
 

@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: littleflowers-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    region: singapore
+    healthCheckPath: /api/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: ADMIN_EMAIL
+        value: admin@littleflowersschools.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: STORAGE_BACKEND
+        value: r2
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        value: littleflowers-media
+      - key: R2_PUBLIC_URL
+        value: https://media.littleflowersschools.com
+      - key: FRONTEND_URL
+        value: https://www.littleflowersschools.com
+      - key: CORS_ORIGINS
+        value: https://littleflowersschools.com
+      - key: TRUST_PROXY_HEADERS
+        value: "true"
+      - key: SEED_DEMO_CONTENT
+        value: "false"

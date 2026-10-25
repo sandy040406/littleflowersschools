@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # Admin seed
     ADMIN_EMAIL: str = "admin@littleflowersschools.com"
     ADMIN_PASSWORD: str = "admin123"
+    SEED_DEMO_CONTENT: bool = False  # Always seeds in dev; set to True in prod only if demo data wanted
 
     # Uploads
     STORAGE_BACKEND: str = "local"  # "local" for dev disk storage, "r2" for Cloudflare R2
