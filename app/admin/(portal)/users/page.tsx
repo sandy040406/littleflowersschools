@@ -30,6 +30,7 @@ import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
+import ImageUploadField from '@/components/ui/ImageUploadField';
 import { useToast } from '@/components/ui/Toast';
 import { api } from '@/lib/api';
 
@@ -1317,6 +1318,40 @@ export default function AdminUsersPage() {
                       />
                     </div>
                   </div>
+
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-semibold text-navy mb-1">Experience</label>
+                      <input
+                        type="text"
+                        value={teacherForm.experience}
+                        onChange={(e) => setTeacherForm({ ...teacherForm, experience: e.target.value })}
+                        className="w-full px-3 py-2 border border-border rounded-lg text-sm"
+                        placeholder="e.g. 8 years"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-navy mb-1">Profile Photo</label>
+                      <ImageUploadField
+                        value={teacherForm.photo_url}
+                        onChange={(url) => setTeacherForm({ ...teacherForm, photo_url: url })}
+                        label=""
+                        aspectRatio="square"
+                        className="max-w-[140px]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-navy mb-1">Short Bio</label>
+                    <textarea
+                      rows={2}
+                      value={teacherForm.bio}
+                      onChange={(e) => setTeacherForm({ ...teacherForm, bio: e.target.value })}
+                      className="w-full px-3 py-2 border border-border rounded-lg text-sm"
+                      placeholder="Teaching philosophy or background..."
+                    />
+                  </div>
                 </>
               )}
 
@@ -1528,14 +1563,14 @@ export default function AdminUsersPage() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-navy mb-1">Photo URL</label>
-              <input
-                type="url"
+            <div className="bg-slate-50 p-3 rounded-xl border border-border">
+              <label className="block text-xs font-semibold text-navy mb-1.5">Profile Photo</label>
+              <ImageUploadField
                 value={teacherEditForm.photo_url}
-                onChange={(e) => setTeacherEditForm({ ...teacherEditForm, photo_url: e.target.value })}
-                className="w-full px-3 py-2 border border-border rounded-lg text-sm"
-                placeholder="https://..."
+                onChange={(url) => setTeacherEditForm({ ...teacherEditForm, photo_url: url })}
+                label=""
+                aspectRatio="square"
+                className="max-w-[160px] mx-auto"
               />
             </div>
 

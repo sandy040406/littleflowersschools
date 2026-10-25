@@ -94,6 +94,7 @@ class TeacherProfileUpdate(BaseModel):
     experience: Optional[str] = None
     bio: Optional[str] = None
     photo_url: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class PublicFacultyOut(BaseModel):
@@ -122,6 +123,8 @@ class CreateTeacher(BaseModel):
     department: Optional[str] = None
     experience: Optional[str] = None
     bio: Optional[str] = None
+    photo_url: Optional[str] = None
+
 
 
 class CreateStudent(BaseModel):

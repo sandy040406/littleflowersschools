@@ -106,9 +106,17 @@ export default function FacultyPage() {
                   
                   <div className="p-5 flex flex-col flex-grow">
                     <h3 className="text-lg font-bold text-navy mb-1">{teacher.name}</h3>
-                    <p className="text-school-blue font-medium text-sm mb-3">
+                    <p className="text-school-blue font-semibold text-sm mb-2">
                       {teacher.designation || 'Educator'}
                     </p>
+
+                    {teacher.department && (
+                      <div className="mb-3">
+                        <span className="inline-block text-[11px] font-medium text-navy/80 bg-soft-blue px-2.5 py-0.5 rounded-md border border-school-blue/15">
+                          {teacher.department}
+                        </span>
+                      </div>
+                    )}
                     
                     {teacher.bio ? (
                       <p className="text-text-secondary text-sm leading-relaxed mb-6 flex-grow line-clamp-3">

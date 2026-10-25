@@ -1,10 +1,11 @@
-import { LayoutDashboard, Users, Image as ImageIcon, Settings, Megaphone, MonitorPlay, MessageSquare, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, Image as ImageIcon, Settings, Megaphone, MonitorPlay, MessageSquare, Bell, GraduationCap } from 'lucide-react';
 import PortalLayout from '@/components/portal/PortalLayout';
 
 const sidebarItems = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
-  { label: 'Inquiries & Messages', href: '/admin/enquiries', icon: <MessageSquare size={20} /> },
+  { label: 'Faculty & Teachers', href: '/admin/faculty', icon: <GraduationCap size={20} /> },
   { label: 'User Management', href: '/admin/users', icon: <Users size={20} /> },
+  { label: 'Inquiries & Messages', href: '/admin/enquiries', icon: <MessageSquare size={20} /> },
   { label: 'Notices & Circulars', href: '/admin/notices', icon: <Bell size={20} /> },
   { label: 'Announcements', href: '/admin/content/announcements', icon: <Megaphone size={20} /> },
   { label: 'Hero Slider', href: '/admin/content/slider', icon: <MonitorPlay size={20} /> },

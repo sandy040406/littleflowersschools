@@ -182,6 +182,8 @@ def update_teacher(
         teacher.bio = body.bio.strip() or None
     if body.photo_url is not None:
         teacher.photo_url = body.photo_url.strip() or None
+    if body.is_active is not None:
+        teacher.is_active = body.is_active
 
     db.commit()
     db.refresh(teacher)
@@ -245,11 +247,53 @@ def create_teacher(
         department=body.department,
         experience=body.experience,
         bio=body.bio,
+        photo_url=body.photo_url.strip() if body.photo_url and body.photo_url.strip() else None,
     )
     db.add(teacher)
     db.commit()
     db.refresh(teacher)
     return teacher
+
+
+@router.put("/teachers/{teacher_id}/toggle-active")
+def toggle_teacher_active(
+    teacher_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_only),
+):
+    """Toggle teacher active state (controls visibility on the public faculty page)."""
+    teacher = db.query(User).filter(User.id == teacher_id, User.role == UserRole.teacher).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    teacher.is_active = not teacher.is_active
+    db.commit()
+    db.refresh(teacher)
+    status_str = "visible on public website" if teacher.is_active else "hidden from public website"
+    return {"message": f"Teacher '{teacher.name}' is now {status_str}.", "is_active": teacher.is_active}
+
+
+@router.delete("/teachers/{teacher_id}")
+def delete_teacher(
+    teacher_id: int,
+    permanent: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_only),
+):
+    """Delete or deactivate a teacher profile."""
+    teacher = db.query(User).filter(User.id == teacher_id, User.role == UserRole.teacher).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    if permanent:
+        db.delete(teacher)
+        db.commit()
+        return {"message": f"Teacher '{teacher.name}' was permanently removed."}
+    else:
+        teacher.is_active = False
+        db.commit()
+        return {"message": f"Teacher '{teacher.name}' has been deactivated and hidden from the website."}
+
 
 
 @router.post("/students", response_model=dict, status_code=status.HTTP_201_CREATED)
