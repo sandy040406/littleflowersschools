@@ -140,12 +140,13 @@ export default async function AboutPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden shadow-xl aspect-4/3 relative z-10">
+              <div className="rounded-2xl overflow-hidden shadow-xl aspect-4/3 relative z-10 bg-soft-blue">
                 <Image
-                  src={PLACEHOLDER_IMAGES.school}
+                  src={settings?.about_image_url ? mediaUrl(settings.about_image_url) : PLACEHOLDER_IMAGES.school}
                   alt={`${schoolName} Campus`}
                   fill
                   className="object-cover"
+                  unoptimized={!!settings?.about_image_url}
                 />
               </div>
               <div className="absolute -bottom-6 -right-6 w-full h-full border-2 border-gold rounded-2xl z-0 hidden lg:block" />

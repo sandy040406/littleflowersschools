@@ -103,6 +103,7 @@ class SiteSettingsOut(BaseModel):
     youtube_url: Optional[str] = None
     twitter_url: Optional[str] = None
     about_text: Optional[str] = None
+    about_image_url: Optional[str] = None
     vision_text: Optional[str] = None
     mission_text: Optional[str] = None
     principal_name: Optional[str] = None
@@ -132,6 +133,7 @@ class SiteSettingsUpdate(BaseModel):
     youtube_url: Optional[str] = None
     twitter_url: Optional[str] = None
     about_text: Optional[str] = None
+    about_image_url: Optional[str] = None
     vision_text: Optional[str] = None
     mission_text: Optional[str] = None
     principal_name: Optional[str] = None

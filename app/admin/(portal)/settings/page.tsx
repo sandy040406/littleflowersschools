@@ -478,38 +478,52 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid lg:grid-cols-3 gap-6 items-start">
                 <div>
-                  <label className="block text-xs font-semibold text-navy mb-1">About School Overview</label>
-                  <textarea
-                    rows={4}
-                    value={form.about_text || ''}
-                    onChange={e => setForm({ ...form, about_text: e.target.value })}
-                    placeholder="The history, foundation, and values of Little Flowers School..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
+                  <ImageUploadField
+                    label="School Heritage / Campus Photo"
+                    value={form.about_image_url || ''}
+                    onChange={(url) => setForm({ ...form, about_image_url: url })}
+                    aspectRatio="video"
                   />
+                  <p className="text-[11px] text-text-muted mt-2">
+                    Displayed on the About page next to &ldquo;A Legacy of Learning and Excellence&rdquo;. Upload a campus building or student activity photo.
+                  </p>
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold text-navy mb-1">Our Vision</label>
-                  <textarea
-                    rows={3}
-                    value={form.vision_text || ''}
-                    onChange={e => setForm({ ...form, vision_text: e.target.value })}
-                    placeholder="1. To impart wisdom and knowledge... 2. To shape responsible citizens..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
-                  />
-                  <p className="text-[11px] text-text-muted mt-0.5">Tip: Points starting with numbers (1., 2.) are automatically formatted into individual cards.</p>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-navy mb-1">Our Mission</label>
-                  <textarea
-                    rows={4}
-                    value={form.mission_text || ''}
-                    onChange={e => setForm({ ...form, mission_text: e.target.value })}
-                    placeholder="1. Holistic Development: Adopt innovative methods... 2. Values: Instill ethics..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
-                  />
-                  <p className="text-[11px] text-text-muted mt-0.5">Tip: Points with titles (e.g. 1. Title: Description) get bold subheadings.</p>
+
+                <div className="lg:col-span-2 space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-navy mb-1">About School Overview</label>
+                    <textarea
+                      rows={4}
+                      value={form.about_text || ''}
+                      onChange={e => setForm({ ...form, about_text: e.target.value })}
+                      placeholder="The history, foundation, and values of Little Flowers School..."
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-navy mb-1">Our Vision</label>
+                    <textarea
+                      rows={3}
+                      value={form.vision_text || ''}
+                      onChange={e => setForm({ ...form, vision_text: e.target.value })}
+                      placeholder="1. To impart wisdom and knowledge... 2. To shape responsible citizens..."
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
+                    />
+                    <p className="text-[11px] text-text-muted mt-0.5">Tip: Points starting with numbers (1., 2.) are automatically formatted into individual cards.</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-navy mb-1">Our Mission</label>
+                    <textarea
+                      rows={4}
+                      value={form.mission_text || ''}
+                      onChange={e => setForm({ ...form, mission_text: e.target.value })}
+                      placeholder="1. Holistic Development: Adopt innovative methods... 2. Values: Instill ethics..."
+                      className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
+                    />
+                    <p className="text-[11px] text-text-muted mt-0.5">Tip: Points with titles (e.g. 1. Title: Description) get bold subheadings.</p>
+                  </div>
                 </div>
               </div>
             </Card>

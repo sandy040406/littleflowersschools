@@ -72,6 +72,7 @@ class SiteSetting(Base):
     youtube_url = Column(String(300), nullable=True)
     twitter_url = Column(String(300), nullable=True)
     about_text = Column(Text, nullable=True)
+    about_image_url = Column(String(500), nullable=True)
     vision_text = Column(Text, nullable=True)
     mission_text = Column(Text, nullable=True)
 

@@ -100,6 +100,7 @@ export interface SiteSettings {
   youtube_url: string | null;
   twitter_url: string | null;
   about_text: string | null;
+  about_image_url: string | null;
   vision_text: string | null;
   mission_text: string | null;
   principal_name: string | null;
