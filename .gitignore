@@ -10,6 +10,11 @@
 !.yarn/releases
 !.yarn/versions
 
+# agent & IDE local logs
+.antigravity/
+.cortex/
+.jetski/
+
 # testing
 /coverage
 

@@ -12,6 +12,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from app.core.config import get_settings
 from app.core.deps import require_role
+from app.core import storage
 from app.models.user import User, UserRole
 
 router = APIRouter(prefix="/api/upload", tags=["File Upload"])
@@ -28,7 +29,7 @@ async def upload_image(
 ):
     """
     Upload an image file. Returns the URL path to the uploaded image.
-    Currently stores to local disk; will swap to R2 later.
+    Uses app.core.storage (local disk in dev, Cloudflare R2 in production).
     """
     # Validate file type
     if file.content_type not in ALLOWED_IMAGE_TYPES:
@@ -46,23 +47,13 @@ async def upload_image(
             detail=f"File too large. Maximum size: {settings.MAX_UPLOAD_SIZE_MB}MB",
         )
 
-    # Generate unique filename
-    ext = os.path.splitext(file.filename or "image.jpg")[1]
-    unique_name = f"{datetime.utcnow().strftime('%Y%m%d')}_{uuid.uuid4().hex[:8]}{ext}"
+    # Build unique storage key and save through storage service
+    key = storage.build_key("images", file.filename)
+    url = storage.save_file(key, contents, file.content_type)
 
-    # Ensure upload directory exists
-    upload_dir = os.path.join(settings.UPLOAD_DIR, "images")
-    os.makedirs(upload_dir, exist_ok=True)
-
-    # Save file
-    file_path = os.path.join(upload_dir, unique_name)
-    with open(file_path, "wb") as f:
-        f.write(contents)
-
-    # Return the URL that the frontend can use
     return {
-        "filename": unique_name,
-        "url": f"/uploads/images/{unique_name}",
+        "filename": os.path.basename(key),
+        "url": url,
         "size": len(contents),
         "content_type": file.content_type,
     }

@@ -25,11 +25,12 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str = "admin123"
 
     # Uploads
+    STORAGE_BACKEND: str = "local"  # "local" for dev disk storage, "r2" for Cloudflare R2
     UPLOAD_DIR: str = "./uploads"
     MAX_UPLOAD_SIZE_MB: int = 10
     MAX_VIDEO_SIZE_MB: int = 200
 
-    # Cloudflare R2 (optional, filled in later)
+    # Cloudflare R2 (active when STORAGE_BACKEND=r2)
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
@@ -76,6 +77,13 @@ class Settings(BaseSettings):
             problems.append("ADMIN_PASSWORD must not be the default and must be at least 10 characters")
         if self.FRONTEND_URL.startswith("http://localhost"):
             problems.append("FRONTEND_URL must be your real https website address")
+        if self.STORAGE_BACKEND.lower() == "r2":
+            missing_r2 = [
+                k for k in ["R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET_NAME", "R2_PUBLIC_URL"]
+                if not getattr(self, k, "").strip()
+            ]
+            if missing_r2:
+                problems.append("STORAGE_BACKEND is 'r2' but missing: " + ", ".join(missing_r2))
         if problems:
             raise RuntimeError("Unsafe production configuration:\n - " + "\n - ".join(problems))
 
