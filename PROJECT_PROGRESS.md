@@ -78,21 +78,11 @@
 2. Manage R2 API Tokens > Create token with Read & Write access.
 3. Note: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and custom domain / public bucket URL (e.g., `https://media.littleflowersschools.com`).
 
-### 3. Backend Deployment (Render)
-1. Connect GitHub repo to [Render.com](https://render.com).
-2. Create Web Service using `Dockerfile` or Python runtime.
-3. Set environment variables:
-   - `ENVIRONMENT=production`
-   - `DATABASE_URL=<Neon connection string>`
-   - `SECRET_KEY=<generated 48-char random secret>`
-   - `ADMIN_EMAIL=admin@littleflowersschools.com`
-   - `ADMIN_PASSWORD=<strong custom password>`
-   - `STORAGE_BACKEND=r2`
-   - `R2_*` credentials
-   - `FRONTEND_URL=https://www.littleflowersschools.com`
-   - `CORS_ORIGINS=https://littleflowersschools.com`
-   - `TRUST_PROXY_HEADERS=true`
-4. Custom domain on Render: `api.littleflowersschools.com`.
+### 3. Backend Deployment (Render) — COMPLETED & LIVE
+- **Live URL**: `https://littleflowers-backend.onrender.com`
+- **Health Check**: `https://littleflowers-backend.onrender.com/api/health` (HTTP 200 OK)
+- **Status**: Live, connected to Neon PostgreSQL and Cloudflare R2
+- Optional Custom Domain: `api.littleflowersschools.com`
 
 ### 4. Frontend Deployment (Vercel)
 1. Import repository into [Vercel](https://vercel.com).
