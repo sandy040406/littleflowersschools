@@ -333,10 +333,10 @@ export default async function AcademicsPage() {
               </div>
               <h3 className="font-bold text-navy text-lg mb-2">Physical Education</h3>
               <p className="text-sm text-text-secondary leading-relaxed mb-4">
-                Age-appropriate physical fitness, yoga, motor coordination drills, and organized games that foster vitality and teamwork.
+                Age-appropriate physical fitness, yoga, and organized indoor &amp; outdoor sports activities that foster vitality and teamwork.
               </p>
               <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-3 border-t border-border/50">
-                {['Yoga & Wellness', 'Team Games', 'Athletic Drills', 'Motor Coordination'].map((item) => (
+                {['Yoga & Wellness', 'Team Games', 'Athletic Drills', 'Indoor & Outdoor Sports Activities'].map((item) => (
                   <span
                     key={item}
                     className="inline-flex items-center text-[11px] font-semibold bg-soft-blue text-navy px-2.5 py-1 rounded-full border border-school-blue/20"
