@@ -2,7 +2,7 @@ import PageHero from '@/components/ui/PageHero';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import { BookOpen, BrainCircuit, CheckCircle2, ChevronDown, Compass, FileText, FlaskConical, Lightbulb, PenTool, ArrowRight } from 'lucide-react';
+import { BookOpen, BrainCircuit, CheckCircle2, ChevronDown, Compass, FileText, FlaskConical, Lightbulb, PenTool, ArrowRight, Palette, Activity, HeartHandshake, Briefcase } from 'lucide-react';
 import { ACADEMICS_FAQ } from '@/lib/mock-data';
 import Button from '@/components/ui/Button';
 
@@ -258,21 +258,45 @@ export default async function AcademicsPage() {
             title="Co-Curricular Integration"
             subtitle="Academics and co-curricular activities go hand in hand to provide a truly holistic education."
           />
-          <div className="grid sm:grid-cols-3 gap-6">
-            <Card className="text-center">
-              <PenTool size={32} className="text-school-blue mx-auto mb-4" />
-              <h3 className="font-bold text-navy mb-2">Arts & Expression</h3>
-              <p className="text-sm text-text-secondary">Integrated visual and performing arts to foster creativity and cultural appreciation.</p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="text-center" hover>
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-school-blue mx-auto mb-4 border border-border/60">
+                <HeartHandshake size={28} />
+              </div>
+              <h3 className="font-bold text-navy text-lg mb-2">Life Skills</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                Developing social-emotional competencies, self-awareness, empathy, decision making, and effective communication.
+              </p>
             </Card>
-            <Card className="text-center">
-              <FlaskConical size={32} className="text-school-blue mx-auto mb-4" />
-              <h3 className="font-bold text-navy mb-2">STEM Clubs</h3>
-              <p className="text-sm text-text-secondary">Practical applications of science, technology, and math through collaborative club activities.</p>
+
+            <Card className="text-center" hover>
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-gold-dark mx-auto mb-4 border border-border/60">
+                <Briefcase size={28} />
+              </div>
+              <h3 className="font-bold text-navy text-lg mb-2">Work Education</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                Meaningful hands-on activities, practical craft work, and productive tasks that cultivate respect for labor and self-reliance.
+              </p>
             </Card>
-            <Card className="text-center">
-              <BookOpen size={32} className="text-school-blue mx-auto mb-4" />
-              <h3 className="font-bold text-navy mb-2">Literary Events</h3>
-              <p className="text-sm text-text-secondary">Debates, elocution, and creative writing to build strong communication skills and confidence.</p>
+
+            <Card className="text-center" hover>
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-school-blue mx-auto mb-4 border border-border/60">
+                <Palette size={28} />
+              </div>
+              <h3 className="font-bold text-navy text-lg mb-2">Fine Arts</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                Drawing, painting, sketching, and creative craftwork to nurture artistic expression, aesthetic appreciation, and imagination.
+              </p>
+            </Card>
+
+            <Card className="text-center" hover>
+              <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-gold-dark mx-auto mb-4 border border-border/60">
+                <Activity size={28} />
+              </div>
+              <h3 className="font-bold text-navy text-lg mb-2">Physical Education</h3>
+              <p className="text-sm text-text-secondary leading-relaxed">
+                Age-appropriate physical fitness, yoga, motor coordination drills, and organized games that foster vitality and teamwork.
+              </p>
             </Card>
           </div>
         </div>
