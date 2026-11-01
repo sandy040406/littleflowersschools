@@ -258,45 +258,93 @@ export default async function AcademicsPage() {
             title="Co-Curricular Integration"
             subtitle="Academics and co-curricular activities go hand in hand to provide a truly holistic education."
           />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="text-center" hover>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+            <Card className="text-center flex flex-col h-full" hover>
               <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-school-blue mx-auto mb-4 border border-border/60">
                 <HeartHandshake size={28} />
               </div>
               <h3 className="font-bold text-navy text-lg mb-2">Life Skills</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
+              <p className="text-sm text-text-secondary leading-relaxed mb-4">
                 Developing social-emotional competencies, self-awareness, empathy, decision making, and effective communication.
               </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-3 border-t border-border/50">
+                {['Emotional Growth', 'Decision Making', 'Communication', 'Independence'].map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center text-[11px] font-semibold bg-soft-blue text-navy px-2.5 py-1 rounded-full border border-school-blue/20"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </Card>
 
-            <Card className="text-center" hover>
+            <Card className="text-center flex flex-col h-full" hover>
               <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-gold-dark mx-auto mb-4 border border-border/60">
                 <Briefcase size={28} />
               </div>
               <h3 className="font-bold text-navy text-lg mb-2">Work Education</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
+              <p className="text-sm text-text-secondary leading-relaxed mb-4">
                 Meaningful hands-on activities, practical craft work, and productive tasks that cultivate respect for labor and self-reliance.
               </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-3 border-t border-border/50">
+                {['Practical Crafts', 'Life Skills Work', 'Hands-on Making', 'Self-Reliance'].map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center text-[11px] font-semibold bg-soft-blue text-navy px-2.5 py-1 rounded-full border border-school-blue/20"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </Card>
 
-            <Card className="text-center" hover>
+            <Card className="text-center flex flex-col h-full" hover>
               <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-school-blue mx-auto mb-4 border border-border/60">
                 <Palette size={28} />
               </div>
               <h3 className="font-bold text-navy text-lg mb-2">Fine Arts</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
-                Drawing, painting, sketching, and creative craftwork to nurture artistic expression, aesthetic appreciation, and imagination.
+              <p className="text-sm text-text-secondary leading-relaxed mb-4">
+                Rich creative, cultural, and mental agility disciplines nurturing artistic expression, focus, and performance:
               </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-3 border-t border-border/50">
+                {[
+                  'Karate / Silambam',
+                  'Carnatic Vocal',
+                  'Bharatanatyam',
+                  'Keyboard',
+                  'Western Dance',
+                  'Art & Crafts',
+                  'Abacus',
+                ].map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center text-[11px] font-semibold bg-soft-blue text-navy px-2.5 py-1 rounded-full border border-school-blue/20"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </Card>
 
-            <Card className="text-center" hover>
+            <Card className="text-center flex flex-col h-full" hover>
               <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-gold-dark mx-auto mb-4 border border-border/60">
                 <Activity size={28} />
               </div>
               <h3 className="font-bold text-navy text-lg mb-2">Physical Education</h3>
-              <p className="text-sm text-text-secondary leading-relaxed">
+              <p className="text-sm text-text-secondary leading-relaxed mb-4">
                 Age-appropriate physical fitness, yoga, motor coordination drills, and organized games that foster vitality and teamwork.
               </p>
+              <div className="flex flex-wrap gap-1.5 justify-center mt-auto pt-3 border-t border-border/50">
+                {['Yoga & Wellness', 'Team Games', 'Athletic Drills', 'Motor Coordination'].map((item) => (
+                  <span
+                    key={item}
+                    className="inline-flex items-center text-[11px] font-semibold bg-soft-blue text-navy px-2.5 py-1 rounded-full border border-school-blue/20"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
             </Card>
           </div>
         </div>
