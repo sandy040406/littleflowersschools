@@ -32,6 +32,7 @@ import {
   ACTIVITIES_DATA,
 } from '@/lib/mock-data';
 import { formatDate, mediaUrl } from '@/lib/utils';
+import type { ActivityItem } from '@/lib/content';
 
 async function getHomeData() {
   const base = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
@@ -55,6 +56,17 @@ export default async function HomePage() {
   const latestEvents = events.slice(0, 3);
   const featuredFaculty = faculty.slice(0, 4);
   const schoolName = settings?.school_name || 'Little Flowers Schools';
+
+  // Dynamic activities from CMS settings with fallback
+  let activities: ActivityItem[] = ACTIVITIES_DATA;
+  if (settings?.activities_json) {
+    try {
+      const parsed = JSON.parse(settings.activities_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        activities = parsed;
+      }
+    } catch {}
+  }
   return (
     <>
       <AlertBanner />
@@ -90,13 +102,14 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* Image */}
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden shadow-lg">
+              <div className="rounded-2xl overflow-hidden shadow-lg aspect-4/3 relative bg-soft-blue">
                 <Image
-                  src={PLACEHOLDER_IMAGES.school}
-                  alt="Little Flowers Schools campus"
-                  width={640}
-                  height={480}
-                  className="w-full h-auto object-cover"
+                  src={settings?.about_image_url ? mediaUrl(settings.about_image_url) : PLACEHOLDER_IMAGES.school}
+                  alt={`${schoolName} campus`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  unoptimized={!!settings?.about_image_url}
                 />
               </div>
               {/* Decorative accent */}
@@ -240,15 +253,16 @@ export default async function HomePage() {
             subtitle="Beyond academics — enriching experiences that build character, confidence, and lifelong skills."
           />
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {ACTIVITIES_DATA.slice(0, 6).map((activity) => (
-              <Card key={activity.title} padding="none" hover>
-                <div className="relative h-44 overflow-hidden rounded-t-xl">
+            {activities.slice(0, 6).map((activity) => (
+              <Card key={activity.id || activity.title} padding="none" hover>
+                <div className="relative h-44 overflow-hidden rounded-t-xl bg-soft-blue">
                   <Image
-                    src={activity.imageUrl}
+                    src={mediaUrl(activity.imageUrl)}
                     alt={activity.title}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    unoptimized
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent" />
                   <h3 className="absolute bottom-3 left-4 text-white font-semibold text-lg">{activity.title}</h3>
