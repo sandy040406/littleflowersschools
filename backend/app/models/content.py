@@ -87,6 +87,7 @@ class SiteSetting(Base):
     activities_json = Column(Text, nullable=True)          # List of { id, title, description, image_url, icon, bullets }
     educational_journey_json = Column(Text, nullable=True) # List of { id, name, grades, focus, highlights, color }
     academics_methodology_json = Column(Text, nullable=True) # { methodology_text, assessment_text, support_text }
+    academics_faq_json = Column(Text, nullable=True)         # List of { id, question, answer }
 
     updated_at = Column(
         DateTime,

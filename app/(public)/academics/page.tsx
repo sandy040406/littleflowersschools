@@ -90,6 +90,16 @@ export default async function AcademicsPage() {
     } catch {}
   }
 
+  let faqs = ACADEMICS_FAQ;
+  if (settings?.academics_faq_json) {
+    try {
+      const parsed = JSON.parse(settings.academics_faq_json);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        faqs = parsed;
+      }
+    } catch {}
+  }
+
   return (
     <>
       <PageHero
@@ -358,7 +368,7 @@ export default async function AcademicsPage() {
             subtitle="Common questions about our academic programs and approach."
           />
           <div className="space-y-4">
-            {ACADEMICS_FAQ.map((faq, index) => (
+            {faqs.map((faq, index) => (
               <details key={index} className="group bg-white rounded-lg border border-border shadow-sm overflow-hidden [&_summary::-webkit-details-marker]:hidden">
                 <summary className="flex items-center justify-between p-5 lg:p-6 cursor-pointer font-semibold text-navy hover:bg-soft-blue/50 transition-colors">
                   {faq.question}

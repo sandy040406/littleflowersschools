@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { 
   Save, School, Phone, Mail, MapPin, Clock, Globe, Info, 
   Target, Lightbulb, CheckCircle2, UserCheck, Plus, Trash2, 
-  Layers, Award, BookOpen, Compass
+  Layers, Award, BookOpen, Compass, HelpCircle
 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -12,9 +12,9 @@ import ImageUploadField from '@/components/ui/ImageUploadField';
 import { useToast } from '@/components/ui/Toast';
 import { 
   getSiteSettings, updateSiteSettings, SiteSettings,
-  FacilityItem, ActivityItem, JourneyStage 
+  FacilityItem, ActivityItem, JourneyStage, FaqItem
 } from '@/lib/content';
-import { PLACEHOLDER_IMAGES, ACTIVITIES_DATA } from '@/lib/mock-data';
+import { PLACEHOLDER_IMAGES, ACTIVITIES_DATA, ACADEMICS_FAQ } from '@/lib/mock-data';
 
 type SettingsTab = 'general' | 'principal' | 'facilities' | 'activities' | 'academics';
 
@@ -54,6 +54,12 @@ const DEFAULT_STAGES: JourneyStage[] = [
   }
 ];
 
+const DEFAULT_FAQS: FaqItem[] = ACADEMICS_FAQ.map((f, i) => ({
+  id: `faq-${i + 1}`,
+  question: f.question,
+  answer: f.answer,
+}));
+
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('general');
   const [loading, setLoading] = useState(true);
@@ -85,6 +91,7 @@ export default function AdminSettingsPage() {
   const [facilities, setFacilities] = useState<FacilityItem[]>(DEFAULT_FACILITIES);
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [stages, setStages] = useState<JourneyStage[]>(DEFAULT_STAGES);
+  const [faqs, setFaqs] = useState<FaqItem[]>(DEFAULT_FAQS);
 
   useEffect(() => {
     async function fetchSettings() {
@@ -137,6 +144,14 @@ export default function AdminSettingsPage() {
             }
           } catch {}
         }
+
+        // Parse FAQs
+        if (data.academics_faq_json) {
+          try {
+            const parsed = JSON.parse(data.academics_faq_json);
+            if (Array.isArray(parsed) && parsed.length > 0) setFaqs(parsed);
+          } catch {}
+        }
       } catch (err: any) {
         showToast(err.message || 'Failed to load settings', 'error');
       } finally {
@@ -155,6 +170,7 @@ export default function AdminSettingsPage() {
         facilities_json: JSON.stringify(facilities),
         activities_json: JSON.stringify(activities),
         educational_journey_json: JSON.stringify(stages),
+        academics_faq_json: JSON.stringify(faqs),
       };
 
       const updated = await updateSiteSettings(payload);
@@ -249,6 +265,36 @@ export default function AdminSettingsPage() {
   const resetStagesToDefault = () => {
     if (confirm('Reset to default Primary School stages (Pre-Primary, Class I-II, Class III-V)?')) {
       setStages(DEFAULT_STAGES);
+    }
+  };
+
+  // FAQ item helpers
+  const updateFaq = (index: number, key: 'question' | 'answer', value: string) => {
+    const next = [...faqs];
+    next[index] = { ...next[index], [key]: value };
+    setFaqs(next);
+  };
+
+  const addFaq = () => {
+    setFaqs([
+      ...faqs,
+      {
+        id: `faq-${Date.now()}`,
+        question: '',
+        answer: '',
+      },
+    ]);
+  };
+
+  const removeFaq = (index: number) => {
+    if (confirm('Are you sure you want to remove this FAQ?')) {
+      setFaqs(faqs.filter((_, i) => i !== index));
+    }
+  };
+
+  const resetFaqsToDefault = () => {
+    if (confirm('Reset all FAQs to standard school defaults?')) {
+      setFaqs(DEFAULT_FAQS);
     }
   };
 
@@ -813,6 +859,96 @@ export default function AdminSettingsPage() {
                   </div>
                 </Card>
               ))}
+            </div>
+
+            {/* FAQ Management Section */}
+            <div className="pt-8 border-t border-border space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-school-blue/10 flex items-center justify-center text-school-blue">
+                    <HelpCircle size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-navy">Frequently Asked Questions (FAQ)</h2>
+                    <p className="text-xs text-text-muted">
+                      Add, edit, or delete questions and answers shown in the Academics page FAQ section
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" onClick={resetFaqsToDefault}>
+                    Reset to Defaults
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" icon={<Plus size={16} />} onClick={addFaq}>
+                    Add FAQ
+                  </Button>
+                </div>
+              </div>
+
+              {faqs.length === 0 ? (
+                <Card padding="lg" className="text-center py-10 border-dashed border-2 border-border bg-soft-blue/20">
+                  <HelpCircle size={36} className="text-text-muted mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-navy mb-1">No FAQs added yet</p>
+                  <p className="text-xs text-text-muted mb-4">Click below to add a question or restore the standard school questions.</p>
+                  <div className="flex justify-center gap-3">
+                    <Button type="button" size="sm" icon={<Plus size={15} />} onClick={addFaq}>
+                      Add First Question
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" onClick={resetFaqsToDefault}>
+                      Restore Defaults
+                    </Button>
+                  </div>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {faqs.map((faq, index) => (
+                    <Card key={faq.id || index} padding="lg" className="border border-border bg-white space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b border-border">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-school-blue/10 text-school-blue font-bold text-xs flex items-center justify-center">
+                            {index + 1}
+                          </span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-navy">
+                            Question #{index + 1}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFaq(index)}
+                          className="text-red-500 hover:text-red-700 p-1.5 rounded hover:bg-red-50 transition-colors flex items-center gap-1 text-xs font-medium"
+                          title="Delete FAQ"
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-navy mb-1">Question *</label>
+                        <input
+                          type="text"
+                          value={faq.question}
+                          onChange={e => updateFaq(index, 'question', e.target.value)}
+                          placeholder="e.g. What curriculum does Little Flowers Schools follow?"
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-navy mb-1">Answer *</label>
+                        <textarea
+                          rows={3}
+                          value={faq.answer}
+                          onChange={e => updateFaq(index, 'answer', e.target.value)}
+                          placeholder="Provide a clear, helpful answer for parents..."
+                          className="w-full px-3 py-2 text-sm rounded-lg border border-border focus:ring-2 focus:ring-school-blue resize-y"
+                          required
+                        />
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

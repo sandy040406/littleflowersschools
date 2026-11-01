@@ -76,6 +76,12 @@ export interface JourneyStage {
   color?: string;
 }
 
+export interface FaqItem {
+  id?: string;
+  question: string;
+  answer: string;
+}
+
 export interface AcademicMethodology {
   methodology_title?: string;
   methodology_text?: string;
@@ -111,6 +117,7 @@ export interface SiteSettings {
   activities_json: string | null;
   educational_journey_json: string | null;
   academics_methodology_json: string | null;
+  academics_faq_json: string | null;
   updated_at: string | null;
 }
 

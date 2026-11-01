@@ -114,6 +114,7 @@ class SiteSettingsOut(BaseModel):
     activities_json: Optional[str] = None
     educational_journey_json: Optional[str] = None
     academics_methodology_json: Optional[str] = None
+    academics_faq_json: Optional[str] = None
     updated_at: Optional[datetime] = None
 
     model_config = {"from_attributes": True}
@@ -144,5 +145,6 @@ class SiteSettingsUpdate(BaseModel):
     activities_json: Optional[str] = None
     educational_journey_json: Optional[str] = None
     academics_methodology_json: Optional[str] = None
+    academics_faq_json: Optional[str] = None
 
 
