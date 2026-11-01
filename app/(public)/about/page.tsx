@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Target, Lightbulb, Heart, Shield, Sparkles, BookOpen, ArrowRight } from 'lucide-react';
+import { Target, Lightbulb, Heart, Shield, Sparkles, BookOpen, ArrowRight, Quote } from 'lucide-react';
 import PageHero from '@/components/ui/PageHero';
 import SectionHeader from '@/components/ui/SectionHeader';
 import Card from '@/components/ui/Card';
@@ -58,6 +58,49 @@ function parseStatementPoints(rawText: string): ParsedPoint[] {
   });
 }
 
+function parsePrincipalParagraphs(rawText: string): string[] {
+  if (!rawText) return [];
+  const text = rawText.trim();
+
+  // If text already has double newlines, split cleanly on them
+  const doubleBreaks = text
+    .split(/\r?\n\s*\r?\n/)
+    .map((p) => p.replace(/^["“”']+|["“”']+$/g, '').trim())
+    .filter(Boolean);
+
+  if (doubleBreaks.length > 1) {
+    return doubleBreaks.map((p) => p.replace(/\r?\n/g, ' '));
+  }
+
+  // If text was pasted as a single paragraph or soft-wrapped with single newlines
+  const clean = text
+    .replace(/^["“”']+|["“”']+$/g, '')
+    .replace(/\r?\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const sentences = clean.split(/(?<=[.!?])\s+/);
+  if (sentences.length <= 2) return [clean];
+
+  const paras: string[] = [];
+  let cur: string[] = [];
+  for (const s of sentences) {
+    cur.push(s);
+    if (
+      s.includes('joy of learning.') ||
+      s.includes('socially and emotionally.') ||
+      s.includes('at their own pace.') ||
+      s.includes('empowered to dream.') ||
+      (cur.length >= 2 && cur.join(' ').length > 250)
+    ) {
+      paras.push(cur.join(' '));
+      cur = [];
+    }
+  }
+  if (cur.length) paras.push(cur.join(' '));
+  return paras.length > 0 ? paras : [clean];
+}
+
 export default async function AboutPage() {
   const settings = await getAboutSettings();
   const schoolName = settings?.school_name || 'Little Flowers Schools';
@@ -81,6 +124,8 @@ export default async function AboutPage() {
     'We believe that a school should be a place where children feel safe to express themselves, challenged to reach their potential, and supported in their individual journeys. Our commitment is to provide an environment that balances academic rigor with holistic development.',
     'Education is a partnership between the school, the students, and the parents. Together, we can build a strong foundation for our children, equipping them not just with knowledge, but with the values, resilience, and skills they need for a fulfilling life.',
   ].join('\n\n');
+
+  const principalParagraphs = parsePrincipalParagraphs(principalMessage);
 
   // Dynamic Facilities with fallback
   const defaultFacilities: FacilityItem[] = [
@@ -266,11 +311,11 @@ export default async function AboutPage() {
       </section>
 
       {/* ===== PRINCIPAL'S MESSAGE ===== */}
-      <section className="py-16 lg:py-24">
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-white to-soft-blue/30">
         <div className="section-container">
-          <div className="bg-white rounded-2xl border border-border shadow-md overflow-hidden">
+          <div className="bg-white rounded-3xl border border-border/80 shadow-xl overflow-hidden">
             <div className="grid lg:grid-cols-5">
-              <div className="lg:col-span-2 relative h-[400px] lg:h-auto min-h-[360px]">
+              <div className="lg:col-span-2 relative h-[420px] lg:h-auto min-h-[400px] bg-soft-blue">
                 <Image
                   src={mediaUrl(principalImage)}
                   alt={principalName}
@@ -278,15 +323,45 @@ export default async function AboutPage() {
                   className="object-cover object-top"
                   unoptimized
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-navy/70 via-transparent to-transparent lg:hidden" />
+                <div className="absolute bottom-5 left-5 right-5 lg:hidden text-white">
+                  <h3 className="font-bold text-xl drop-shadow">{principalName}</h3>
+                  <p className="text-gold text-sm font-medium drop-shadow">{principalTitle}</p>
+                </div>
               </div>
-              <div className="lg:col-span-3 p-8 lg:p-12 flex flex-col justify-center">
-                <span className="text-xs font-bold uppercase tracking-wider text-school-blue block mb-1">Leadership Desk</span>
-                <h2 className="text-2xl sm:text-3xl font-bold text-navy mb-1">Message from the {principalTitle}</h2>
-                <h3 className="text-school-blue font-semibold text-lg mb-6">{principalName}</h3>
-                <div className="space-y-4 text-text-secondary leading-relaxed italic text-base lg:text-lg">
-                  {principalMessage.split('\n\n').map((para: string, idx: number) => (
-                    <p key={idx}>{para.startsWith('"') ? para : `"${para}"`}</p>
-                  ))}
+              <div className="lg:col-span-3 p-8 sm:p-10 lg:p-12 flex flex-col justify-center">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-soft-blue text-school-blue text-xs font-bold uppercase tracking-wider w-fit mb-3 border border-school-blue/15">
+                  <Sparkles size={13} className="text-gold" />
+                  <span>Leadership Desk</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy mb-1 tracking-tight">
+                  Message from the {principalTitle}
+                </h2>
+                <h3 className="text-school-blue font-semibold text-base sm:text-lg mb-6 hidden lg:block">
+                  {principalName}
+                </h3>
+
+                <div className="relative mb-6">
+                  <Quote size={40} className="text-gold/25 absolute -top-4 -left-2 select-none -z-0" />
+                  <div className="relative z-10 space-y-4 text-text-secondary leading-relaxed text-justify text-sm sm:text-base">
+                    {principalParagraphs.map((para, idx) => (
+                      <p key={idx} className="leading-relaxed">
+                        {para}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6 border-t border-border mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div>
+                    <p className="font-serif italic font-bold text-navy text-lg">{principalName}</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-school-blue">
+                      {principalTitle}, {schoolName}
+                    </p>
+                  </div>
+                  <div className="text-xs text-text-muted italic bg-warm-white px-3 py-1.5 rounded-lg border border-border/60">
+                    &ldquo;Empowering every child to dream.&rdquo;
+                  </div>
                 </div>
               </div>
             </div>
