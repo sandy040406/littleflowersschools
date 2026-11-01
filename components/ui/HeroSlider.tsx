@@ -49,7 +49,7 @@ export default function HeroSlider() {
   if (isLoading || activeSlides.length === 0) return null;
 
   return (
-    <section className="relative bg-navy overflow-hidden">
+    <section className="relative bg-slate-950 overflow-hidden">
       {/* Slides Container */}
       <div className="relative h-[80vh] min-h-[600px] w-full">
         {activeSlides.map((slide, index) => (
@@ -59,52 +59,54 @@ export default function HeroSlider() {
               index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
             }`}
           >
-            {/* Background Image */}
+            {/* Background Image - Vibrant, visible and in true colors */}
             <Image
               src={mediaUrl(slide.image_url)}
-              alt={slide.title}
+              alt={slide.title || 'Little Flowers School'}
               fill
-              className="object-cover opacity-40"
+              className="object-cover opacity-95"
               fetchPriority={index === 0 ? "high" : "auto"}
               unoptimized
               sizes="100vw"
             />
-            {/* Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy to-transparent opacity-60" />
+            {/* Subtle neutral scrim on left side for text readability without blue tint */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 to-black/10 lg:to-transparent lg:max-w-3xl pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
 
             {/* Content */}
             <div className="absolute inset-0 flex items-center">
               <div className="section-container w-full">
                 <div className="max-w-2xl transform transition-all duration-1000 translate-y-0 opacity-100">
                   {slide.subtitle && (
-                    <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm text-white/90 mb-6 border border-white/20">
+                    <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full px-4 py-1.5 text-sm text-white mb-6 border border-white/20 shadow-sm">
                       <Star size={14} className="text-gold" />
                       <span className="tracking-wide font-medium">{slide.subtitle}</span>
                     </div>
                   )}
                   
-                  <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
-                    {slide.title}
-                  </h1>
+                  {slide.title && slide.title.trim() ? (
+                    <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold !text-white text-white leading-tight mb-6 drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
+                      {slide.title}
+                    </h1>
+                  ) : null}
                   
-                  <p className="text-white/80 text-lg lg:text-xl leading-relaxed mb-8 max-w-xl font-medium">
+                  <p className="text-white text-lg lg:text-xl leading-relaxed mb-8 max-w-xl font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
                     {slide.description || 'A nurturing environment where every child discovers their potential through quality education and a love for learning.'}
                   </p>
                   
                   <div className="flex flex-wrap gap-4">
                     {slide.cta_link ? (
-                      <Button href={slide.cta_link} size="lg" className="bg-gold text-navy hover:bg-gold-light border-none shadow-xl shadow-gold/20">
+                      <Button href={slide.cta_link} size="lg" className="bg-gold text-navy hover:bg-gold-light border-none shadow-xl shadow-gold/20 font-bold">
                         {slide.cta_label || 'Explore'}
                         <ArrowRight size={18} />
                       </Button>
                     ) : (
-                      <Button href="/about" size="lg" className="bg-gold text-navy hover:bg-gold-light border-none shadow-xl shadow-gold/20">
+                      <Button href="/about" size="lg" className="bg-gold text-navy hover:bg-gold-light border-none shadow-xl shadow-gold/20 font-bold">
                         Explore Our School
                         <ArrowRight size={18} />
                       </Button>
                     )}
-                    <Button href="/enquiry" size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm">
+                    <Button href="/enquiry" size="lg" variant="outline" className="border-white/50 text-white bg-black/30 hover:bg-white/20 hover:text-white backdrop-blur-sm shadow-md font-semibold">
                       Enquire Now
                     </Button>
                   </div>
@@ -119,14 +121,14 @@ export default function HeroSlider() {
           <>
             <button
               onClick={prevSlide}
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md hover:bg-white/20 transition-all border border-white/10"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 transition-all border border-white/20 shadow-lg"
               aria-label="Previous slide"
             >
               <ChevronLeft size={24} />
             </button>
             <button
               onClick={nextSlide}
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/20 text-white backdrop-blur-md hover:bg-white/20 transition-all border border-white/10"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-md hover:bg-black/60 transition-all border border-white/20 shadow-lg"
               aria-label="Next slide"
             >
               <ChevronRight size={24} />
