@@ -22,9 +22,9 @@ async function getFooterSettings() {
   return {
     school_name: 'Little Flowers Schools',
     tagline: 'Growing Curious Minds. Building Confident Futures.',
-    phone: '+91 11 2345 6789',
-    email: 'info@littleflowersschools.com',
-    address: '123 Education Lane, New Delhi, India 110001',
+    phone: '+91 9789827060',
+    email: 'littleflowersschool016@gmail.com',
+    address: 'No.8, Rajaji Street, New Perungalathur, Chennai - 63',
     facebook_url: '#',
     instagram_url: '#',
     youtube_url: '#',
