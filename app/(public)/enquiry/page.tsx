@@ -174,7 +174,7 @@ export default function EnquiryPage() {
                           className="w-full px-4 py-2.5 rounded-lg border border-border focus:outline-none focus:ring-2 focus:ring-school-blue/50 focus:border-school-blue bg-white"
                         >
                           <option value="">Select Class...</option>
-                          <option value="Pre-Primary">Pre-Primary (Nursery / KG)</option>
+                          <option value="Play School">Play School</option>
                           <option value="Nursery">Nursery / Pre-KG</option>
                           <option value="LKG">LKG</option>
                           <option value="UKG">UKG</option>

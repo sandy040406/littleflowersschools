@@ -70,7 +70,7 @@ interface StudentOut {
 }
 
 const COMMON_CLASSES = [
-  'Nursery', 'LKG', 'UKG',
+  'Play School', 'Nursery', 'LKG', 'UKG',
   'Class I', 'Class II', 'Class III', 'Class IV', 'Class V'
 ];
 

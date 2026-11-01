@@ -153,7 +153,15 @@ export default async function AcademicsPage() {
             .bg-navy p.text-text-secondary { color: rgba(255,255,255,0.7) !important; }
           `}} />
 
-          <div className={`grid md:grid-cols-2 ${stages.length <= 3 ? 'lg:grid-cols-3 max-w-5xl mx-auto' : 'lg:grid-cols-4'} gap-6`}>
+          <div className={
+            stages.length === 1
+              ? 'max-w-md mx-auto'
+              : stages.length === 2
+              ? 'max-w-3xl mx-auto grid md:grid-cols-2 gap-8'
+              : stages.length === 3
+              ? 'max-w-5xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-6'
+              : 'grid md:grid-cols-2 lg:grid-cols-4 gap-6'
+          }>
             {stages.map((level, idx) => {
               const colorClass = level.color || (idx === 0 ? 'bg-gold' : idx === 1 ? 'bg-school-blue' : idx === 2 ? 'bg-white/20' : 'bg-success');
               const features = level.highlights || (level as any).features || [];

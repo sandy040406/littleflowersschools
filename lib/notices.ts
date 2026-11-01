@@ -65,6 +65,7 @@ export const NOTICE_CATEGORIES: { label: string; value: NoticeCategory; color: s
 ];
 
 export const SCHOOL_CLASSES = [
+  'Play School',
   'Nursery',
   'LKG',
   'UKG',
