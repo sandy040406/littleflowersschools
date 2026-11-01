@@ -26,7 +26,7 @@ async function getFooterSettings() {
     email: 'littleflowersschool016@gmail.com',
     address: 'No.8, Rajaji Street, New Perungalathur, Chennai - 63',
     facebook_url: '#',
-    instagram_url: '#',
+    instagram_url: 'https://www.instagram.com/littleflowersschool_pglr/',
     youtube_url: '#',
     twitter_url: '#',
   };
@@ -53,7 +53,7 @@ export default async function Footer() {
             <div className="flex items-center gap-3">
               {[
                 { icon: Globe, href: settings.facebook_url || '#', label: 'Facebook' },
-                { icon: Camera, href: settings.instagram_url || '#', label: 'Instagram' },
+                { icon: Camera, href: (settings.instagram_url && settings.instagram_url !== '#') ? settings.instagram_url : 'https://www.instagram.com/littleflowersschool_pglr/', label: 'Instagram' },
                 { icon: Video, href: settings.youtube_url || '#', label: 'YouTube' },
                 { icon: MessageCircle, href: settings.twitter_url || '#', label: 'Twitter' },
               ].map((social) => (
