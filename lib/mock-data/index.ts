@@ -546,8 +546,8 @@ export const ACADEMICS_FAQ = [
     answer: 'We use a combination of continuous assessment, periodic tests, projects, and examinations. Parents receive regular updates on their child\'s progress through our parent portal and scheduled parent-teacher meetings.',
   },
   {
-    question: 'Does the school offer remedial support?',
-    answer: 'Yes, we provide additional academic support for students who need it, including remedial classes, peer tutoring, and one-on-one guidance from teachers.',
+    question: 'Does the school offer individual attention and academic support?',
+    answer: 'Yes, we provide dedicated individual attention for students who need it, including personalized guidance from teachers, peer tutoring, and structured support tailored to each child.',
   },
   {
     question: 'What co-curricular activities are available?',

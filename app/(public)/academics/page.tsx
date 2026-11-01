@@ -235,7 +235,7 @@ export default async function AcademicsPage() {
               <ul className="space-y-3 text-text-secondary text-sm">
                 <li className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2 flex-shrink-0" />
-                  <span><strong>Remedial Classes:</strong> Extra support for students who need additional help grasping specific concepts.</span>
+                  <span><strong>Individual Attention:</strong> Personalized guidance and dedicated mentoring to help every child learn and progress at their own comfortable pace.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-1.5 h-1.5 rounded-full bg-gold mt-2 flex-shrink-0" />
