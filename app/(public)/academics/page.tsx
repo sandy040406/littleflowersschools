@@ -28,35 +28,42 @@ export default async function AcademicsPage() {
     {
       id: 'pre-primary',
       name: 'Pre-Primary',
-      grades: 'Nursery – KG',
-      focus: 'Exploration & Play',
-      highlights: ['Phonics and basic literacy', 'Number readiness', 'Motor skills development', 'Social interaction'],
-      color: 'bg-gold'
+      grades: 'Nursery – UKG',
+      focus: 'Exploration, Play & Sensory Learning',
+      highlights: [
+        'Phonics and early reading readiness',
+        'Number concepts & counting games',
+        'Fine and gross motor skills development',
+        'Social interaction & emotional expression',
+      ],
+      color: 'bg-gold',
     },
     {
-      id: 'primary',
-      name: 'Primary',
-      grades: 'Class I – V',
-      focus: 'Foundation Building',
-      highlights: ['Core language skills', 'Mathematical concepts', 'Environmental awareness', 'Creative expression'],
-      color: 'bg-school-blue'
+      id: 'lower-primary',
+      name: 'Lower Primary',
+      grades: 'Class I – II',
+      focus: 'Foundational Literacy & Numeracy',
+      highlights: [
+        'Core language skills, reading fluency & spelling',
+        'Basic arithmetic, shapes & spatial awareness',
+        'Environmental studies & nature observation',
+        'Creative arts, storytelling & physical activities',
+      ],
+      color: 'bg-school-blue',
     },
     {
-      id: 'middle',
-      name: 'Middle School',
-      grades: 'Class VI – VIII',
-      focus: 'Concept Expansion',
-      highlights: ['Subject-specific learning', 'Scientific inquiry', 'Historical perspective', 'Language proficiency'],
-      color: 'bg-white/20'
+      id: 'upper-primary',
+      name: 'Upper Primary',
+      grades: 'Class III – V',
+      focus: 'Conceptual Mastery & Problem Solving',
+      highlights: [
+        'Integrated science inquiry & logical reasoning',
+        'Mathematical problem-solving & mental arithmetic',
+        'Social studies & cultural awareness',
+        'Computer literacy, sports & collaborative projects',
+      ],
+      color: 'bg-navy',
     },
-    {
-      id: 'secondary',
-      name: 'Secondary',
-      grades: 'Class IX – X',
-      focus: 'Academic Preparation',
-      highlights: ['Advanced concepts', 'Board exam preparation', 'Career counseling', 'Analytical skills'],
-      color: 'bg-success'
-    }
   ];
 
   let stages: JourneyStage[] = defaultJourney;
@@ -64,7 +71,21 @@ export default async function AcademicsPage() {
     try {
       const parsed = JSON.parse(settings.educational_journey_json);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        stages = parsed;
+        // Exclude legacy Middle or Secondary stages
+        const filtered = parsed.filter((s: JourneyStage) => {
+          const name = (s.name || '').toLowerCase();
+          const grades = s.grades || '';
+          return (
+            !name.includes('middle') &&
+            !name.includes('secondary') &&
+            !grades.includes('VI') &&
+            !grades.includes('IX') &&
+            !grades.includes('X')
+          );
+        });
+        if (filtered.length > 0) {
+          stages = filtered;
+        }
       }
     } catch {}
   }
@@ -132,7 +153,7 @@ export default async function AcademicsPage() {
             .bg-navy p.text-text-secondary { color: rgba(255,255,255,0.7) !important; }
           `}} />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className={`grid md:grid-cols-2 ${stages.length <= 3 ? 'lg:grid-cols-3 max-w-5xl mx-auto' : 'lg:grid-cols-4'} gap-6`}>
             {stages.map((level, idx) => {
               const colorClass = level.color || (idx === 0 ? 'bg-gold' : idx === 1 ? 'bg-school-blue' : idx === 2 ? 'bg-white/20' : 'bg-success');
               const features = level.highlights || (level as any).features || [];

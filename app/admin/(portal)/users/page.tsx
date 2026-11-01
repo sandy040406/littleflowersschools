@@ -71,8 +71,7 @@ interface StudentOut {
 
 const COMMON_CLASSES = [
   'Nursery', 'LKG', 'UKG',
-  'Class I', 'Class II', 'Class III', 'Class IV', 'Class V',
-  'Class VI', 'Class VII', 'Class VIII', 'Class IX', 'Class X'
+  'Class I', 'Class II', 'Class III', 'Class IV', 'Class V'
 ];
 
 export default function AdminUsersPage() {

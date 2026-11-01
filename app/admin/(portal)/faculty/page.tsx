@@ -48,18 +48,15 @@ export interface TeacherUser {
 }
 
 const COMMON_DEPARTMENTS = [
-  'Kindergarten',
-  'Primary School',
-  'Middle School',
-  'Secondary School',
-  'Senior Secondary',
-  'Languages',
-  'Science',
+  'Pre-Primary / Kindergarten',
+  'Primary School (Class I - V)',
+  'Languages (English / Regional)',
+  'Science & EVS',
   'Mathematics',
   'Social Studies',
-  'Computer Science',
+  'Computer & Technology',
   'Arts & Music',
-  'Physical Education',
+  'Physical Education & Sports',
 ];
 
 export default function AdminFacultyPage() {

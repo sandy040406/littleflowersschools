@@ -31,34 +31,26 @@ const DEFAULT_STAGES: JourneyStage[] = [
   {
     id: 'pre-primary',
     name: 'Pre-Primary',
-    grades: 'Nursery – KG',
-    focus: 'Exploration & Play',
-    highlights: ['Phonics and basic literacy', 'Number readiness', 'Motor skills development', 'Social interaction'],
+    grades: 'Nursery – UKG',
+    focus: 'Exploration, Play & Sensory Learning',
+    highlights: ['Phonics and early reading readiness', 'Number readiness & counting games', 'Fine and gross motor skills development', 'Social interaction & emotional expression'],
     color: 'bg-gold'
   },
   {
-    id: 'primary',
-    name: 'Primary',
-    grades: 'Class I – V',
-    focus: 'Foundation Building',
-    highlights: ['Core language skills', 'Mathematical concepts', 'Environmental awareness', 'Creative expression'],
+    id: 'lower-primary',
+    name: 'Lower Primary',
+    grades: 'Class I – II',
+    focus: 'Foundational Literacy & Numeracy',
+    highlights: ['Core language skills, reading fluency & spelling', 'Basic arithmetic, shapes & spatial awareness', 'Environmental studies & nature observation', 'Creative arts, storytelling & physical activities'],
     color: 'bg-school-blue'
   },
   {
-    id: 'middle',
-    name: 'Middle School',
-    grades: 'Class VI – VIII',
-    focus: 'Concept Expansion',
-    highlights: ['Subject-specific learning', 'Scientific inquiry', 'Historical perspective', 'Language proficiency'],
-    color: 'bg-white/20'
-  },
-  {
-    id: 'secondary',
-    name: 'Secondary',
-    grades: 'Class IX – X',
-    focus: 'Academic Preparation',
-    highlights: ['Advanced concepts', 'Board exam preparation', 'Career counseling', 'Analytical skills'],
-    color: 'bg-success'
+    id: 'upper-primary',
+    name: 'Upper Primary',
+    grades: 'Class III – V',
+    focus: 'Conceptual Mastery & Problem Solving',
+    highlights: ['Integrated science inquiry & logical reasoning', 'Mathematical problem-solving & mental arithmetic', 'Social studies & cultural awareness', 'Computer literacy, sports & collaborative projects'],
+    color: 'bg-navy'
   }
 ];
 
@@ -135,7 +127,14 @@ export default function AdminSettingsPage() {
         if (data.educational_journey_json) {
           try {
             const parsed = JSON.parse(data.educational_journey_json);
-            if (Array.isArray(parsed) && parsed.length > 0) setStages(parsed);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              const cleaned = parsed.filter((s: JourneyStage) => {
+                const name = (s.name || '').toLowerCase();
+                const grades = s.grades || '';
+                return !name.includes('middle') && !name.includes('secondary') && !grades.includes('VI') && !grades.includes('IX') && !grades.includes('X');
+              });
+              setStages(cleaned.length > 0 ? cleaned : DEFAULT_STAGES);
+            }
           } catch {}
         }
       } catch (err: any) {
@@ -225,6 +224,32 @@ export default function AdminSettingsPage() {
     const next = [...stages];
     next[index] = { ...next[index], [key]: value };
     setStages(next);
+  };
+
+  const addStage = () => {
+    setStages([
+      ...stages,
+      {
+        id: `stage-${Date.now()}`,
+        name: 'New Learning Stage',
+        grades: 'Class X',
+        focus: 'Key Academic Focus',
+        highlights: ['Learning milestone 1', 'Learning milestone 2'],
+        color: 'bg-school-blue',
+      },
+    ]);
+  };
+
+  const removeStage = (index: number) => {
+    if (confirm('Are you sure you want to remove this learning stage?')) {
+      setStages(stages.filter((_, i) => i !== index));
+    }
+  };
+
+  const resetStagesToDefault = () => {
+    if (confirm('Reset to default Primary School stages (Pre-Primary, Class I-II, Class III-V)?')) {
+      setStages(DEFAULT_STAGES);
+    }
   };
 
   if (loading) {
@@ -709,17 +734,34 @@ export default function AdminSettingsPage() {
         {/* ========================================================= */}
         {activeTab === 'academics' && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-bold text-navy">Educational Journey &amp; Levels</h2>
-              <p className="text-xs text-text-muted">Manage the 4 learning phases shown on the Academics page</p>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-navy">Educational Journey &amp; Levels</h2>
+                <p className="text-xs text-text-muted">Manage the learning stages shown on the Academics page (Classes up to Grade 5)</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={resetStagesToDefault}>
+                  Reset to Grade 1–5
+                </Button>
+                <Button type="button" variant="outline" size="sm" icon={<Plus size={16} />} onClick={addStage}>
+                  Add Stage
+                </Button>
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {stages.map((stage, index) => (
                 <Card key={stage.id} padding="lg" className="border border-border bg-white space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-border">
                     <span className="text-xs font-bold uppercase tracking-wider text-school-blue">Stage #{index + 1}</span>
-                    <span className="text-xs text-text-muted font-medium">{stage.grades}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeStage(index)}
+                      className="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors flex items-center gap-1 text-xs font-medium"
+                      title="Delete Stage"
+                    >
+                      <Trash2 size={14} /> Delete
+                    </button>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-3">

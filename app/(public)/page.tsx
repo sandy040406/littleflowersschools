@@ -145,12 +145,26 @@ export default async function HomePage() {
             title="Our Academics"
             subtitle="A comprehensive curriculum designed to inspire learning, develop critical thinking, and prepare students for future success."
           />
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: 'Pre-Primary', desc: 'A playful, nurturing introduction to learning through exploration and creativity.', grades: 'Nursery – KG', color: 'bg-gold/10 text-gold-dark' },
-              { title: 'Primary', desc: 'Building strong foundations in literacy, numeracy, and essential skills.', grades: 'Class I – V', color: 'bg-school-blue/10 text-school-blue' },
-              { title: 'Middle School', desc: 'Deepening understanding across subjects with structured academic support.', grades: 'Class VI – VIII', color: 'bg-navy/10 text-navy' },
-              { title: 'Secondary', desc: 'Focused academic preparation with career guidance and skill development.', grades: 'Class IX – X', color: 'bg-success/10 text-success' },
+              {
+                title: 'Pre-Primary',
+                desc: 'A playful, nurturing introduction to learning through curiosity, sensory exploration, and creative expression.',
+                grades: 'Nursery – UKG',
+                color: 'bg-gold/10 text-gold-dark'
+              },
+              {
+                title: 'Lower Primary',
+                desc: 'Building foundational confidence in language, reading, mathematical concepts, and environmental awareness.',
+                grades: 'Class I – II',
+                color: 'bg-school-blue/10 text-school-blue'
+              },
+              {
+                title: 'Upper Primary',
+                desc: 'Encouraging conceptual mastery, scientific curiosity, critical thinking, and collaborative project learning.',
+                grades: 'Class III – V',
+                color: 'bg-navy/10 text-navy'
+              },
             ].map((item) => (
               <Card key={item.title} hover>
                 <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg ${item.color} mb-4`}>

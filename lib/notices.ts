@@ -65,7 +65,7 @@ export const NOTICE_CATEGORIES: { label: string; value: NoticeCategory; color: s
 ];
 
 export const SCHOOL_CLASSES = [
-  'Pre-K',
+  'Nursery',
   'LKG',
   'UKG',
   'Class I',
@@ -73,13 +73,6 @@ export const SCHOOL_CLASSES = [
   'Class III',
   'Class IV',
   'Class V',
-  'Class VI',
-  'Class VII',
-  'Class VIII',
-  'Class IX',
-  'Class X',
-  'Class XI',
-  'Class XII',
 ];
 
 // ── Public Fetchers ──────────────────────────────────────────

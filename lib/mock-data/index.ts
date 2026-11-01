@@ -169,11 +169,6 @@ export const MOCK_CLASSES: SchoolClass[] = [
   { id: 'c3', name: 'Class III', section: 'A', classTeacherId: 't1', studentCount: 35 },
   { id: 'c4', name: 'Class IV', section: 'A', classTeacherId: 't2', studentCount: 33 },
   { id: 'c5', name: 'Class V', section: 'A', classTeacherId: 't5', studentCount: 30 },
-  { id: 'c6', name: 'Class VI', section: 'A', classTeacherId: 't1', studentCount: 34 },
-  { id: 'c7', name: 'Class VII', section: 'A', classTeacherId: 't2', studentCount: 32 },
-  { id: 'c8', name: 'Class VIII', section: 'A', classTeacherId: 't5', studentCount: 30 },
-  { id: 'c9', name: 'Class IX', section: 'A', classTeacherId: 't6', studentCount: 28 },
-  { id: 'c10', name: 'Class X', section: 'A', classTeacherId: 't1', studentCount: 26 },
 ];
 
 // ============================================================

@@ -175,15 +175,14 @@ export default function EnquiryPage() {
                         >
                           <option value="">Select Class...</option>
                           <option value="Pre-Primary">Pre-Primary (Nursery / KG)</option>
+                          <option value="Nursery">Nursery / Pre-KG</option>
+                          <option value="LKG">LKG</option>
+                          <option value="UKG">UKG</option>
                           <option value="Class I">Class I</option>
                           <option value="Class II">Class II</option>
                           <option value="Class III">Class III</option>
                           <option value="Class IV">Class IV</option>
                           <option value="Class V">Class V</option>
-                          <option value="Class VI">Class VI</option>
-                          <option value="Class VII">Class VII</option>
-                          <option value="Class VIII">Class VIII</option>
-                          <option value="Class IX">Class IX</option>
                         </select>
                       </div>
                     </div>
